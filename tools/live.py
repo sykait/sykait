@@ -174,7 +174,7 @@ def stats_panel(s):
         rot = [-2, 1.5, -1, 2, -1.5, 1][i]
         num, nw = odometer(val, 18, 66, 52, .4 + i * .1, ink=ink)
         ld, lw = text_d("barlowx", label, 15, 18, 92, tracking=.6)
-        b.append(f'<g transform="translate({x} {y}) rotate({rot})"><g class="pop" style="animation-delay:{.25 + i * .08:.2f}s"><g class="bob" style="animation-delay:-{i * .55:.2f}s">'
+        b.append(f'<g transform="translate({x} {y}) rotate({rot})"><g class="riseT" style="animation-delay:{.25 + i * .08:.2f}s"><g class="floatT" style="animation-delay:-{i * .55:.2f}s">'
                  f'<clipPath id="st{i}"><polygon points="0,4 172,0 168,104 -4,108"/></clipPath>'
                  f'<polygon points="0,4 172,0 168,104 -4,108" fill="#000" stroke="#fff" stroke-width="1.5" transform="translate(12 12)"/>'
                  f'<polygon points="0,4 172,0 168,104 -4,108" fill="{BLACK if box != BLACK else RED}" transform="translate(6 6)" stroke="#fff" stroke-width="2"/>'
@@ -212,6 +212,8 @@ def stats_panel(s):
     b.append(f'<g transform="translate({fmt(W - sw - 24)} 344)"><path d="{sd}" fill="#fff" opacity=".7"/></g>')
     b.append(sparkles([(600, 28, 9, .5), (975, 330, 8, 1.6), (40, 330, 8, 2.4)]))
     css = (".roll{animation:roll 1.6s cubic-bezier(.2,.8,.2,1) both}@keyframes roll{0%{transform:translateY(0)}100%{transform:translateY(var(--to))}}"
+           ".riseT{animation:riseT .6s cubic-bezier(.2,1.3,.4,1) both}@keyframes riseT{0%{opacity:0;transform:translateY(26px)}100%{opacity:1;transform:none}}"
+           ".floatT{animation:floatT 3.4s ease-in-out infinite}@keyframes floatT{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}"
            ".sweep{animation:sweep 3.8s ease-in-out 2s infinite}@keyframes sweep{0%{transform:translateX(0)}60%,100%{transform:translateX(420px)}}"
            ".growL{transform-box:fill-box;transform-origin:0 50%;animation:growL 1.2s cubic-bezier(.2,.9,.2,1) both}@keyframes growL{0%{transform:scaleX(0)}100%{transform:none}}")
     return svg_doc(W, H, "".join(b), css=css, title="GitHub stats for sykait")
@@ -323,7 +325,7 @@ def status_panel(hist, bot):
     b.append(f'<g class="ghost"><path d="{gd}" fill="none" stroke="#fff" stroke-width="2" opacity=".07"/></g>')
     # left slab: title + emblem
     b.append(f'<g class="slideR"><polygon points="0,0 330,0 268,{H} 0,{H}" fill="{RED}"/>'
-             f'<polygon points="0,0 330,0 268,{H} 0,{H}" fill="none" stroke="#fff" stroke-width="4" transform="translate(16 0)"/></g>')
+             f'<polygon points="338,0 350,0 288,{H} 276,{H}" fill="#fff"/></g>')
     items, tw = ransom("STATUS", 42, seed=717, styles=["wb", "bw", "wr", "bw", "wb", "bw"], jitter=.8)
     b.append(place(items, 30, 66, delay=.15, step=.06))
     kd, kw = text_d("jpd", "稼働状況", 18, 0, 0)
