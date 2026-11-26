@@ -1,0 +1,115 @@
+"""Shared paths, links and drawing helpers for the profile panels."""
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from p5 import *  # noqa: F401,F403
+from p5 import (BLACK, PETAL_CSS, PETAL_DEF, RED, RED_D, WHITE, fmt, heart, image_data_uri, measure, petals, place,
+                ransom, sparkle, spiky, star5, starburst, svg_doc, text_d, vtext_d, wrap)
+
+TOOLS = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(TOOLS)
+ASSETS = os.path.join(REPO, "assets")
+SRC = os.path.join(TOOLS, "src")
+WATERMARK = os.path.join(SRC, "watermark.png")
+COVER = os.path.join(SRC, "trailer-cover.webp")
+
+LINKS = {
+    "site": "https://re.kaixen.online",
+    "server": "https://discord.gg/kaixen",
+    "discord": "https://discord.com/users/995728579868512308",
+    "x": "https://x.com/soytarikait",
+    "trailer": "https://www.youtube.com/watch?v=Ne1W0aU2w2E",
+}
+
+_rose_cache = {}
+
+
+def rose(size):
+    if size not in _rose_cache:
+        _rose_cache[size] = image_data_uri(WATERMARK, size)
+    return _rose_cache[size]
+
+
+def halftone_defs(pid, mid, x1, y1, x2, y2, r=2.6, step=11, color=BLACK, op=0.38):
+    return (f'<pattern id="{pid}" width="{step}" height="{step}" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">'
+            f'<circle cx="{step / 2}" cy="{step / 2}" r="{r}" fill="{color}"/></pattern>'
+            f'<linearGradient id="{mid}g" x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}">'
+            f'<stop offset="0" stop-color="#fff" stop-opacity="{op}"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>'
+            f'<mask id="{mid}"><rect width="100%" height="100%" fill="url(#{mid}g)"/></mask>')
+
+
+def pivot(r):
+    """Invisible circle centred on (0,0). Spinning groups use transform-box:fill-box, so an
+    uneven spiky frame (plus its offset shadow) would otherwise rotate around the wrong point
+    and drift away from whatever sits in the middle."""
+    return f'<circle r="{fmt(r)}" fill="none"/>'
+
+
+def rose_emblem(cx, cy, img, frame_out, frame_in, delay, seed=3):
+    s = img
+    return (f'<g transform="translate({cx} {cy})"><g class="pop" style="animation-delay:{delay}s"><g class="float">'
+            f'<g class="spinR">{pivot(frame_out + 16)}<polygon points="{spiky(16, frame_out, frame_in, seed)}" fill="{BLACK}" transform="translate(9 9)"/>'
+            f'<polygon points="{spiky(16, frame_out, frame_in, seed)}" fill="{WHITE}" stroke="{BLACK}" stroke-width="6" stroke-linejoin="round"/></g>'
+            f'<circle r="{frame_in * 0.98}" fill="url(#glow)" class="pulse"/>'
+            f'<g class="spinF"><circle r="{frame_in * 0.93}" fill="none" stroke="{BLACK}" stroke-width="3" stroke-dasharray="3 9"/></g>'
+            f'<image href="{rose(360)}" x="{-s / 2}" y="{-s / 2}" width="{s}" height="{s}"/>'
+            f"</g></g></g>")
+
+
+def glow_def():
+    return ('<radialGradient id="glow"><stop offset="0" stop-color="#ff1f3a" stop-opacity=".9"/>'
+            '<stop offset=".6" stop-color="#e60012" stop-opacity=".35"/><stop offset="1" stop-color="#e60012" stop-opacity="0"/></radialGradient>')
+
+
+def sparkles(pts, stroke=BLACK, fill=WHITE):
+    out = []
+    for x, y, r, dl in pts:
+        out.append(f'<g transform="translate({x} {y})"><path class="tw" style="animation-delay:{dl}s" d="{sparkle(r)}" '
+                   f'fill="{fill}" stroke="{stroke}" stroke-width="1.6" stroke-linejoin="round"/></g>')
+    return "".join(out)
+
+
+def strip_text(segments, size, x, y, font="barlow", gap=26):
+    """Text segments separated by little red sparkles. Returns (svg, width)."""
+    out, cx = [], x
+    for i, seg in enumerate(segments):
+        if i:
+            out.append(f'<path d="{sparkle(8)}" transform="translate({fmt(cx + gap / 2)} {fmt(y - size * 0.36)})" fill="{RED}"/>')
+            cx += gap
+        d, w = text_d(font, seg, size, cx, y)
+        out.append(f'<path d="{d}" fill="{WHITE}"/>')
+        cx += w
+    return "".join(out), cx - x
+
+
+
+# ================================================================== BUTTONS
+
+def button(label, kanji, accent, seed):
+    W, H = 400, 104
+    poly = "22,22 384,14 368,86 10,92"
+    size = 38
+    d, tw = text_d("anton", label, size, 0, 0, tracking=1)
+    if tw > 260:  # keep room for the star and the arrow
+        size = 38 * 260 / tw
+        d, tw = text_d("anton", label, size, 0, 0, tracking=1)
+    kd, kw = text_d("jp", kanji, 15, 0, 0)
+    tx = 58 + (290 - tw) / 2 - 6
+    b = [f'<defs><clipPath id="bc{seed}"><polygon points="{poly}"/></clipPath></defs>']
+    b.append(f'<g class="pop" style="animation-delay:.2s"><g class="bobB">'
+             f'<polygon points="{poly}" fill="{accent}" transform="translate(8 7)"/>'
+             f'<polygon points="{poly}" fill="{BLACK}" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>'
+             f'<g clip-path="url(#bc{seed})"><g class="shine" style="animation-delay:{1 + seed * .7:.1f}s">'
+             f'<polygon points="0,0 50,0 10,110 -40,110" fill="#fff" opacity=".22"/></g></g>'
+             f'<path d="{d}" transform="translate({fmt(tx)} 70)" fill="{WHITE}"/>'
+             f'<g transform="translate(36 54)"><polygon class="spinF" points="{star5(17)}" fill="{accent}" stroke="#fff" stroke-width="2"/></g>'
+             f'<g transform="translate({fmt(tx + tw + 14)} 56)"><path class="nudge" d="M0,-11 L14,0 L0,11 Z" fill="{accent}"/></g>'
+             f'<g transform="translate(250 6) rotate(-4)"><polygon points="-8,-4 {fmt(kw + 10)},-6 {fmt(kw + 7)},20 -6,21" fill="{WHITE}" stroke="#000" stroke-width="2"/>'
+             f'<path d="{kd}" transform="translate(1 14)" fill="{accent if accent != WHITE else BLACK}"/></g>'
+             f'</g></g>')
+    css = (".bobB{animation:bobB 2.8s ease-in-out infinite}@keyframes bobB{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}"
+           ".nudge{animation:nudge 1s ease-in-out infinite}@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}")
+    return svg_doc(W, H, "".join(b), css=css, title=label)
+
+
