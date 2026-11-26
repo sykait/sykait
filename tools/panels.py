@@ -146,41 +146,96 @@ def rekaixen():
              ("ANTI-NUKE", "防衛"), ("AI ASSISTANT", "相棒"), ("& MUCH MORE", "もっと")]
     mx, my, dy, dx = 640, 312, 40, -14
     n = len(feats)
-    # Game-menu cursor: hop down one item at a time (overshoot + squash on landing, a flash and
-    # a star pop), and from the last item keep going down off the list, then drop back in from
-    # above onto the first item.
-    S, m = 1.55, .32            # time per item, move time
-    a = n * S - m               # leave the last item
-    b2 = a + .22                # gone below the list
-    c = b2 + .02                # teleported above the list
-    T = c + .32                 # landed on the first item again (= start of the loop)
-    P = lambda t: f"{t / T * 100:.2f}%"
+    # Game-menu cursor, built from one schedule:
+    #   two normal loops (hop item by item; from the last item it drops off the bottom and
+    #   lands on the first again), then a "button mash": the cursor races down the list over
+    #   and over, slows down step by step and stops on MODERATION. Then it all repeats.
+    S, m = 1.55, .32
     pos = lambda i, extra=0: f"translate({i * dx}px,{i * dy + extra}px)"
-    kf = [f"0%{{transform:{pos(0)} scale(1,1);opacity:1}}"]
-    arrivals = [0.0]
-    for i in range(1, n):
-        t0, t2 = i * S - m, i * S
-        kf.append(f"{P(t0)}{{transform:{pos(i - 1)} scale(1,1);opacity:1}}")
-        kf.append(f"{P(t2 - m * .35)}{{transform:{pos(i, 8)} scale(1.05,.84);opacity:1}}")
-        kf.append(f"{P(t2)}{{transform:{pos(i)} scale(1,1);opacity:1}}")
-        arrivals.append(t2)
-    kf.append(f"{P(a)}{{transform:{pos(n - 1)} scale(1,1);opacity:1}}")
-    kf.append(f"{P(b2)}{{transform:{pos(n)} scale(1,.55);opacity:0}}")
-    kf.append(f"{P(c)}{{transform:{pos(-1)} scale(1,.55);opacity:0}}")
-    kf.append(f"{P(T - .32 * .35)}{{transform:{pos(0, 8)} scale(1.05,.84);opacity:1}}")
-    kf.append(f"100%{{transform:{pos(0)} scale(1,1);opacity:1}}")
+    sel = [(0.0, pos(0), 1, "scale(1,1)")]          # (time, translate, opacity, scale)
+    holds = {i: [] for i in range(n)}                # item -> [(on, off, fast)]
+    lands = []                                       # (time, strength) for flash / star pop
+    t, cur, on_since = 0.0, 0, 0.0
+
+    def leave(at):
+        holds[cur].append((on_since, at, False))
+
+    def wrap_to_top(t0, t1, fast):
+        # off the bottom, then in from above
+        mid = t0 + (t1 - t0) * .45
+        sel.append((t0, pos(n - 1), 1, "scale(1,1)"))
+        sel.append((mid, pos(n), 0, "scale(1,.55)"))
+        sel.append((mid + .01, pos(-1), 0, "scale(1,.55)"))
+        if not fast:
+            sel.append((t1 - (t1 - mid) * .35, pos(0, 8), 1, "scale(1.05,.84)"))
+        sel.append((t1, pos(0), 1, "scale(1,1)"))
+
+    for loop in range(2):
+        for i in range(1, n):
+            t0, t2 = t + i * S - m, t + i * S
+            leave(t0)
+            sel.append((t0, pos(i - 1), 1, "scale(1,1)"))
+            sel.append((t2 - m * .35, pos(i, 8), 1, "scale(1.05,.84)"))
+            sel.append((t2, pos(i), 1, "scale(1,1)"))
+            cur, on_since = i, t2
+            lands.append((t2, .75))
+        a = t + n * S - m
+        leave(a)
+        if loop == 0:
+            wrap_to_top(a, a + .56, False)
+            t = a + .56
+            cur, on_since = 0, t
+            lands.append((t, .75))
+        else:
+            t = a
+    # button mash: 15 steps (two full laps + one), each a little slower than the last
+    steps = [0.055 * 1.21 ** k for k in range(15)]
+    for k, d in enumerate(steps):
+        t0, t1 = t, t + d * .6
+        nxt = (cur + 1) % n
+        if k:  # the item we leave stops being highlighted (the first one was left above)
+            holds[cur].append((on_since, t0, True))
+        if nxt == 0:
+            wrap_to_top(t0, t1, k < len(steps) - 1)
+        else:
+            sel.append((t0, pos(cur), 1, "scale(1,1.12)"))
+            if k == len(steps) - 1:
+                sel.append((t1 - d * .2, pos(nxt, 8), 1, "scale(1.05,.84)"))
+            sel.append((t1, pos(nxt), 1, "scale(1,1.12)" if k < len(steps) - 1 else "scale(1,1)"))
+        cur, on_since = nxt, t1
+        lands.append((t1, .75 if k == len(steps) - 1 else .3))
+        t = t + d
+    T = lands[-1][0]                                  # final landing on MODERATION = loop point
+    sel = [s for s in sel if s[0] <= T] + [(T, pos(0), 1, "scale(1,1)")]
+    holds[0] = [h for h in holds[0] if h[0] < T]
+
+    P = lambda tt: f"{min(max(tt / T * 100, 0), 100):.3f}%"
+    seen, kf = set(), []
+    for tt, tr, op, sc in sorted(sel, key=lambda s: s[0]):
+        p = P(tt)
+        if p in seen:
+            kf = [k for k in kf if not k.startswith(p + "{")]
+        seen.add(p)
+        kf.append(f"{p}{{transform:{tr} {sc};opacity:{op}}}")
     css = ("@keyframes sel{" + "".join(kf) + "}"
            f".sel{{transform-box:fill-box;transform-origin:50% 50%;animation:sel {T:.2f}s ease-in-out 1.8s infinite both}}")
-    # landing flash + star pop, one keyframe set each, synced to the same loop
-    fl, sp = ["0%{opacity:.75}"], ["0%{transform:scale(1.5) rotate(40deg)}"]
-    for t in arrivals[1:]:
-        fl += [f"{P(t - .02)}{{opacity:0}}", f"{P(t)}{{opacity:.75}}", f"{P(t + .28)}{{opacity:0}}"]
-        sp += [f"{P(t - .02)}{{transform:scale(1) rotate(0)}}", f"{P(t + .06)}{{transform:scale(1.5) rotate(40deg)}}", f"{P(t + .35)}{{transform:scale(1) rotate(0)}}"]
-    fl += [f"{P(.28)}{{opacity:0}}", f"{P(T - .03)}{{opacity:0}}", "100%{opacity:.75}"]
-    sp += [f"{P(.35)}{{transform:scale(1) rotate(0)}}", f"{P(T - .03)}{{transform:scale(1) rotate(0)}}", "100%{transform:scale(1.5) rotate(40deg)}"]
-    fl.sort(key=lambda s: float(s.split("%")[0])); sp.sort(key=lambda s: float(s.split("%")[0]))
-    css += ("@keyframes flash{" + "".join(fl) + "}" + f".flash{{animation:flash {T:.2f}s linear 1.8s infinite both}}"
-            "@keyframes starP{" + "".join(sp) + "}" + f".starP{{transform-box:fill-box;transform-origin:50% 50%;animation:starP {T:.2f}s ease-out 1.8s infinite both}}")
+    # landing flash + star pop
+    fl, sp = {}, {}
+    for tt, strength in lands:
+        fl[P(max(tt - .015, 0))] = "opacity:0"
+        fl[P(tt)] = f"opacity:{strength}"
+        fl[P(min(tt + (.26 if strength > .5 else .08), T))] = "opacity:0"
+        if strength > .5:
+            sp[P(max(tt - .015, 0))] = "transform:scale(1) rotate(0)"
+            sp[P(min(tt + .06, T))] = "transform:scale(1.5) rotate(40deg)"
+            sp[P(min(tt + .35, T))] = "transform:scale(1) rotate(0)"
+    fl["100.000%"] = "opacity:.75"
+    fl["0.000%"] = "opacity:.75"; fl[P(.26)] = "opacity:0"
+    sp["0.000%"] = "transform:scale(1.5) rotate(40deg)"; sp[P(.35)] = "transform:scale(1) rotate(0)"
+    sp["100.000%"] = "transform:scale(1.5) rotate(40deg)"
+    srt = lambda d: "".join(f"{k}{{{v}}}" for k, v in sorted(d.items(), key=lambda kv: float(kv[0][:-1])))
+    css += ("@keyframes flash{" + srt(fl) + "}" + f".flash{{animation:flash {T:.2f}s linear 1.8s infinite both}}"
+            "@keyframes starP{" + srt(sp) + "}" + f".starP{{transform-box:fill-box;transform-origin:50% 50%;animation:starP {T:.2f}s ease-out 1.8s infinite both}}")
     poly = f"{mx - 34},{my - 26} {mx + 320},{my - 31} {mx + 306},{my + 13} {mx - 42},{my + 15}"
     b.append(f'<g class="fade" style="animation-delay:1.6s"><g class="sel">'
              f'<polygon points="{poly}" fill="{BLACK}" stroke="#fff" stroke-width="2" transform="translate(6 5)"/>'
@@ -188,20 +243,30 @@ def rekaixen():
              f'<polygon class="flash" points="{poly}" fill="#fff"/>'
              f'<g transform="translate({mx - 52} {my - 7})"><g class="starP"><polygon points="{star5(14)}" fill="{WHITE}" stroke="#000" stroke-width="2.5"/></g></g>'
              f"</g></g>")
-    # each item slides right and grows a little while the cursor sits on it
+    # each item slides out and grows while the cursor sits on it (quick blips during the mash)
+    on, off = "transform:translateX(16px) scale(1.08)", "transform:none"
     for i, (en, jp) in enumerate(feats):
-        x, y = mx + i * dx, my + i * dy
-        s_ = 0.0 if i == 0 else i * S
-        e_ = a if i == n - 1 else (i + 1) * S - m
-        on, off = "transform:translateX(16px) scale(1.08)", "transform:none"
+        hk = {}
+        ivs = sorted(holds[i])
         if i == 0:
-            hk = f"0%{{{on}}}{P(e_)}{{{on}}}{P(e_ + .16)}{{{off}}}{P(T - .14)}{{{off}}}100%{{{on}}}"
+            hk["0.000%"] = on
+            hk["100.000%"] = on
+            hk[P(T - .14)] = off
         else:
-            hk = f"0%{{{off}}}{P(s_ - .14)}{{{off}}}{P(s_)}{{{on}}}{P(e_)}{{{on}}}{P(e_ + .16)}{{{off}}}100%{{{off}}}"
-        css += (f"@keyframes hl{i}{{{hk}}}"
+            hk["0.000%"] = off
+            hk["100.000%"] = off
+        for s_, e_, fast in ivs:
+            dlt = .05 if fast else .14
+            if s_ > 0:
+                hk[P(max(s_ - dlt, 0))] = off
+                hk[P(s_)] = on
+            hk[P(e_)] = on
+            hk[P(min(e_ + (.05 if fast else .16), T))] = off
+        css += (f"@keyframes hl{i}{{{srt(hk)}}}"
                 f".hl{i}{{transform-box:fill-box;transform-origin:0% 50%;animation:hl{i} {T:.2f}s cubic-bezier(.3,1.6,.5,1) 1.8s infinite both}}")
         its, ww = ransom(en, 27, seed=100 + i, styles=["ow", "ow", "ow", "wb", "ow", "ow", "bw", "ow", "ow", "ow", "wr", "ow"], jitter=.55, overlap=.86)
-        kd, _ = text_d("jp", jp, 16, x + ww + 12, y + 6)
+        kd, _ = text_d("jp", jp, 16, mx + i * dx + ww + 12, my + i * dy + 6)
+        x, y = mx + i * dx, my + i * dy
         b.append(f'<g class="slideR" style="animation-delay:{1.0 + i * .08:.2f}s"><g class="hl{i}">{place(its, x - 8, y - 6, pop=None, bob=None)}'
                  f'<path d="{kd}" fill="{WHITE}" opacity=".85"/></g></g>')
 
