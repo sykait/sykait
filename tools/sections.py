@@ -175,12 +175,128 @@ def cube(s):
             f'<polygon points="{right}" fill="{RED_D}" stroke="#000" stroke-width="3" stroke-linejoin="round"/>{grid}')
 
 
+# ---- SyHost card: its own terminal theme (colours and logo from SyHost.ps1), not the Persona look
+SY = {"bg": "#121214", "bar": "#1b1b1f", "brass": "#EF3742", "copper": "#A01C28", "text": "#F0F0F0",
+      "soft": "#A5A5AA", "dim": "#6E6E74", "dark": "#3A3A40"}
+SY_LOGO = {
+    "S": ["███████╗", "██╔════╝", "███████╗", "╚════██║", "███████║", "╚══════╝"],
+    "Y": ["██╗   ██╗", "╚██╗ ██╔╝", " ╚████╔╝ ", "  ╚██╔╝  ", "   ██║   ", "   ╚═╝   "],
+    "H": ["██╗  ██╗", "██║  ██║", "███████║", "██╔══██║", "██║  ██║", "╚═╝  ╚═╝"],
+    "O": [" ██████╗ ", "██╔═══██╗", "██║   ██║", "██║   ██║", "╚██████╔╝", " ╚═════╝ "],
+    "T": ["████████╗", "╚══██╔══╝", "   ██║   ", "   ██║   ", "   ██║   ", "   ╚═╝   "],
+}
+
+
+def terminal_card():
+    W, H = 500, 330
+    c = SY
+    wx, wy, ww, wh = 12, 10, 472, 300
+    F = "cascadia"
+    b = ['<defs>'
+         f'<linearGradient id="syg" x1="0" x2="1"><stop offset="0" stop-color="{c["brass"]}"/><stop offset=".55" stop-color="{c["copper"]}"/>'
+         f'<stop offset="1" stop-color="{c["brass"]}"/></linearGradient>'
+         f'<clipPath id="syw"><rect x="{wx}" y="{wy}" width="{ww}" height="{wh}" rx="10"/></clipPath>']
+    # logo rows (built exactly like SyHost does: one row of every letter, joined)
+    rows = ["".join(SY_LOGO[ch][r] for ch in "SYHOST") for r in range(6)]
+    size, lh = 14, 16.2
+    _, adv, _ = glyph(F, "█", size)
+    lw = adv * len(rows[0])
+    lx, ly = wx + (ww - lw) / 2, 50
+    logo_paths = []
+    for r, row in enumerate(rows):
+        d, _ = text_d(F, row, size, lx, ly + (r + 1) * lh - 3.5)
+        logo_paths.append(d)
+    b.append('<clipPath id="sylogo">' + "".join(f'<path d="{d}"/>' for d in logo_paths) + '</clipPath></defs>')
+    # depth layers + window
+    b.append(f'<g class="pop" style="animation-delay:.05s">'
+             f'<rect x="{wx}" y="{wy}" width="{ww}" height="{wh}" rx="10" fill="#000" stroke="#fff" stroke-width="1.5" transform="translate(13 13)"/>'
+             f'<rect x="{wx}" y="{wy}" width="{ww}" height="{wh}" rx="10" fill="{c["copper"]}" transform="translate(7 7)"/>'
+             f'<rect x="{wx}" y="{wy}" width="{ww}" height="{wh}" rx="10" fill="{c["bg"]}" stroke="{c["dark"]}" stroke-width="2"/></g>')
+    inner = []
+    # faint scanlines + a slow CRT sweep
+    inner.append("".join(f'<rect x="{wx}" y="{y}" width="{ww}" height="1" fill="#fff" opacity=".025"/>' for y in range(wy + 30, wy + wh, 4)))
+    inner.append(f'<g class="crt"><rect x="{wx}" y="{wy - 60}" width="{ww}" height="60" fill="{c["brass"]}" opacity=".05"/></g>')
+    # title bar
+    td, _ = text_d(F, "SyHost.ps1 — PowerShell", 11.5, wx + 80, wy + 20)
+    inner.append(f'<rect x="{wx}" y="{wy}" width="{ww}" height="30" fill="{c["bar"]}"/>'
+                 f'<rect x="{wx}" y="{wy + 30}" width="{ww}" height="1" fill="{c["dark"]}"/>'
+                 + "".join(f'<circle cx="{wx + 20 + i * 17}" cy="{wy + 15}" r="5.5" fill="{col}"/>' for i, col in enumerate([c["brass"], c["soft"], c["dim"]]))
+                 + f'<path d="{td}" fill="{c["dim"]}"/>')
+    sq, sqw = text_d(F, "SIDE QUEST", 10.5, 0, 0)
+    inner.append(f'<g transform="translate({fmt(wx + ww - sqw - 26)} {wy + 19})"><rect x="-8" y="-12" width="{fmt(sqw + 16)}" height="17" rx="3" fill="{c["brass"]}"/>'
+                 f'<path d="{sq}" fill="{c["bg"]}"/></g>')
+    # logo: gradient, typed in row by row, with a light sweep through the letters
+    inner.append("".join(f'<path d="{d}" fill="url(#syg)"/>' for d in logo_paths))
+    inner.append(f'<g clip-path="url(#sylogo)"><g class="sysweep"><rect x="{fmt(lx - 90)}" y="{ly}" width="60" height="{fmt(lh * 6 + 4)}" fill="#fff" opacity=".55" transform="skewX(-18)"/></g></g>')
+    for r in range(6):
+        inner.append(f'<rect class="type" style="animation-delay:{.35 + r * .12:.2f}s;animation-duration:.5s;animation-timing-function:steps(20)" '
+                     f'x="{fmt(lx - 2)}" y="{fmt(ly + r * lh)}" width="{fmt(lw + 4)}" height="{fmt(lh + .5)}" fill="{c["bg"]}"/>')
+    # prompt line, typed
+    y1 = 168
+    p1, p1w = text_d(F, "PS C:\\SyHost>", 13, wx + 20, y1)
+    p2, p2w = text_d(F, " .\\SyHost.bat", 13, wx + 20 + p1w, y1)
+    inner.append(f'<path d="{p1}" fill="{c["dim"]}"/><path d="{p2}" fill="{c["text"]}"/>'
+                 f'<rect class="type" style="animation-delay:1.2s;animation-duration:.9s;animation-timing-function:steps(13)" x="{fmt(wx + 18 + p1w)}" y="{y1 - 13}" width="{fmt(p2w + 6)}" height="17" fill="{c["bg"]}"/>'
+                 f'<rect class="caret" x="{fmt(wx + 24 + p1w + p2w)}" y="{y1 - 12}" width="8" height="15" fill="{c["brass"]}"/>')
+    # status pill like SyHost's "● SERVER ONLINE"
+    y2 = 196
+    pd, pw = text_d(F, "● SERVER ONLINE", 11.5, 0, 0)
+    sd, _ = text_d(F, "friends join via playit.gg", 12, wx + 40 + pw, y2)
+    inner.append(f'<g class="fadeT" style="animation-delay:2.1s"><g transform="translate({wx + 26} {y2})"><rect x="-7" y="-13" width="{fmt(pw + 14)}" height="18" rx="3" fill="{c["text"]}"/>'
+                 f'<path d="{pd}" fill="{c["bg"]}"/><circle cx="4" cy="-4" r="4.6" fill="{c["brass"]}" class="blinkS"/></g>'
+                 f'<path d="{sd}" fill="{c["soft"]}"/></g>')
+    # progress bar with the ▰ cells SyHost uses
+    y3 = 222
+    bar_on, bw_ = text_d(F, "▰" * 14, 13, wx + 30, y3)
+    lb, _ = text_d(F, "[", 13, wx + 20, y3)
+    rb, _ = text_d(F, "]", 13, wx + 30 + bw_, y3)
+    ld, _ = text_d(F, "NeoForge · Forge · Fabric", 12, wx + 48 + bw_, y3)
+    inner.append(f'<g class="fadeT" style="animation-delay:2.3s"><path d="{lb}{rb}" fill="{c["dim"]}"/><path d="{bar_on}" fill="{c["dark"]}"/>'
+                 f'<clipPath id="sybar"><rect x="{wx + 30}" y="{y3 - 14}" width="{fmt(bw_)}" height="18"/></clipPath>'
+                 f'<g clip-path="url(#sybar)"><g class="fill"><path d="{bar_on}" fill="url(#syg)"/></g></g>'
+                 f'<path d="{ld}" fill="{c["soft"]}"/></g>')
+    # one-line description as a comment
+    y4 = 248
+    dd, _ = text_d(F, "# one-click modded Minecraft servers", 12, wx + 20, y4)
+    inner.append(f'<g class="fadeT" style="animation-delay:2.5s"><path d="{dd}" fill="{c["dim"]}"/></g>')
+    # tags as rounded boxes; one at a time gets the selected (brass) border, like SyHost's list
+    tags = ["PowerShell", "NeoForge", "Fabric", "playit.gg"]
+    tx, y5 = wx + 20, 282
+    for i, t in enumerate(tags):
+        d, w = text_d(F, t, 11, 0, 0)
+        inner.append(f'<g class="fadeT" style="animation-delay:{2.6 + i * .08:.2f}s"><g transform="translate({fmt(tx)} {y5})">'
+                     f'<rect class="tagsel" style="animation-delay:{i * .9 - 3.6:.1f}s" x="0" y="-15" width="{fmt(w + 16)}" height="22" rx="5" fill="{c["bar"]}" stroke="{c["dark"]}" stroke-width="1.6"/>'
+                     f'<path d="{d}" transform="translate(8 0)" fill="{c["soft"]}"/></g></g>')
+        tx += w + 16 + 7
+    # OPEN: the selected (double border) entry
+    od, ow = text_d(F, "> OPEN REPO", 12, 0, 0)
+    ox = wx + ww - ow - 38
+    inner.append(f'<g class="fadeT" style="animation-delay:2.9s"><g transform="translate({fmt(ox)} {y5})"><g class="nudgeT">'
+                 f'<rect x="-10" y="-17" width="{fmt(ow + 20)}" height="26" rx="4" fill="none" stroke="{c["brass"]}" stroke-width="1.6"/>'
+                 f'<rect x="-6" y="-13" width="{fmt(ow + 12)}" height="18" rx="2" fill="{c["brass"]}" opacity=".16" stroke="{c["brass"]}" stroke-width="1"/>'
+                 f'<path d="{od}" fill="{c["text"]}"/></g></g></g>')
+    b.append(f'<g clip-path="url(#syw)">{"".join(inner)}</g>')
+    css = (".type{transform-box:fill-box;transform-origin:100% 50%;animation-name:type;animation-fill-mode:both}"
+           "@keyframes type{0%{transform:scaleX(1)}100%{transform:scaleX(0)}}"
+           ".caret{animation:caret 1s steps(1) infinite}@keyframes caret{50%{opacity:0}}"
+           ".sysweep{animation:sysweep 4.5s ease-in-out 1.6s infinite}@keyframes sysweep{0%{transform:translateX(0)}55%,100%{transform:translateX(560px)}}"
+           ".crt{animation:crt 6s linear infinite}@keyframes crt{0%{transform:translateY(0)}100%{transform:translateY(380px)}}"
+           ".fadeT{animation:fadeT .25s steps(2) both}@keyframes fadeT{0%{opacity:0}100%{opacity:1}}"
+           ".blinkS{animation:blinkS 1.2s steps(1) infinite}@keyframes blinkS{50%{opacity:.2}}"
+           ".fill{animation:fillB 3.2s steps(14) 2.4s infinite both}@keyframes fillB{0%{transform:translateX(-170px)}80%,100%{transform:translateX(0)}}"
+           f".tagsel{{animation:tagsel 3.6s steps(1) infinite both}}@keyframes tagsel{{0%,24%{{stroke:{c['brass']};fill:#2a1216}}25%,100%{{stroke:{c['dark']};fill:{c['bar']}}}}}"
+           ".nudgeT{animation:nudgeT 1.6s ease-in-out infinite}@keyframes nudgeT{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}")
+    return svg_doc(W, H, "".join(b), css=css, title="SyHost project card")
+
+
 def project_card(key):
+    if key == "syhost":
+        return terminal_card()
     W, H = 500, 330
     if key == "rekaixen":
         title, seed, kanji, badge = "Re:Kaixen", 301, "本命", "MAIN QUEST"
         desc = "One Discord bot for moderation, leveling, tickets, giveaways and more, with a built-in AI assistant."
-        tags = ["discord.js", "Node.js", "AI", "Express", "SQLite", "Stripe"]
+        tags = ["discord.js", "Node.js", "SQLite", "OpenAI", "AI assistant"]
         dark = True
     else:
         title, seed, kanji, badge = "SyHost", 302, "道具", "SIDE QUEST"

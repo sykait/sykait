@@ -34,6 +34,8 @@ FONTS = {
     "mono": "ofl/spacemono/SpaceMono-Bold.ttf",
     "jp": "ofl/zenkakugothicnew/ZenKakuGothicNew-Bold.ttf",
     "jpd": "ofl/delagothicone/DelaGothicOne-Regular.ttf",
+    # SyHost's own terminal font (OFL), from the SyHost repo
+    "cascadia": "https://raw.githubusercontent.com/sykait/SyHost/main/fonts/CascadiaMono-Bold.ttf",
 }
 RANSOM_FONTS = ["dmserif", "abril", "archivo", "anton", "bowlby", "alfaslab", "ultra", "bungee"]
 
@@ -57,7 +59,8 @@ def font_file(key):
     if not os.path.exists(path):
         import urllib.request
         os.makedirs(FONTDIR, exist_ok=True)
-        urllib.request.urlretrieve(GF + FONTS[key], path + ".part")
+        url = FONTS[key] if FONTS[key].startswith("https://") else GF + FONTS[key]
+        urllib.request.urlretrieve(url, path + ".part")
         os.replace(path + ".part", path)
     return path
 
