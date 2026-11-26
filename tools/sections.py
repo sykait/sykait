@@ -176,13 +176,12 @@ def project_card(key):
     W, H = 500, 330
     if key == "rekaixen":
         title, seed, kanji, badge = "Re:Kaixen", 301, "本命", "MAIN QUEST"
-        desc = ("All-in-one Discord bot: moderation, leveling, tickets, giveaways and much more in one place, "
-                "with a built-in AI assistant on Discord and the web.")
+        desc = "One Discord bot for moderation, leveling, tickets, giveaways and more, with a built-in AI assistant."
         tags = ["discord.js", "Node.js", "AI", "Express", "SQLite", "Stripe"]
         dark = True
     else:
         title, seed, kanji, badge = "SyHost", 302, "道具", "SIDE QUEST"
-        desc = "One-click modded Minecraft servers with an animated terminal UI. NeoForge, Forge and Fabric, in EN, TR and JA."
+        desc = "One-click modded Minecraft servers (NeoForge, Forge, Fabric) with an animated terminal UI."
         tags = ["PowerShell", "NeoForge", "Fabric", "playit.gg"]
         dark = False
     bg, ink = (BLACK, WHITE) if dark else (WHITE, BLACK)
@@ -210,9 +209,9 @@ def project_card(key):
     b.append(chips(tags, 30, 156 + len(lines) * 22 + 22, 300, seed))
     # art
     if key == "rekaixen":
-        b.append(rose_emblem(410, 120, 130, 82, 66, .5, seed=4))
+        b.append(rose_emblem(398, 124, 124, 78, 63, .5, seed=4))
     else:
-        b.append(syhost_logo(410, 124))
+        b.append(syhost_logo(398, 124))
     od, ow = text_d("archivo", "OPEN", 15, 0, 0, tracking=2)
     b.append(f'<g transform="translate({W - ow - 70} 296)"><g class="pop" style="animation-delay:1.2s">'
              f'<polygon points="-12,-20 {fmt(ow + 40)},-22 {fmt(ow + 36)},8 -15,9" fill="{WHITE if dark else BLACK}" stroke="{BLACK if dark else WHITE}" stroke-width="2"/>'
@@ -268,59 +267,6 @@ def arsenal():
 
 # ================================================================ FOOTER
 
-def kai_head():
-    """Original chibi mascot (kait's own character, not based on any existing one): black hood,
-    messy black hair with an ahoge, red eyes, a rose hairclip from the watermark and a little
-    phantom-thief mask pushed up on the head. Origin = centre of the face. Drawn behind the bar."""
-    hood = "M-74,72 C-86,10 -72,-72 0,-76 C72,-72 86,10 74,72 Z"
-    rim = "M-61,64 C-68,10 -58,-58 0,-62 C58,-58 68,10 61,64 Z"
-    hair = ("M-52,14 C-58,-36 -30,-60 0,-60 C30,-60 58,-36 52,14 L47,2 L42,16 L35,-6 L27,8 L20,-12 L11,4 "
-            "L3,-14 L-6,2 L-14,-12 L-22,6 L-30,-8 L-37,10 L-44,-2 Z")
-    locks = "M-52,8 Q-57,36 -45,54 Q-46,34 -39,20 Z M52,8 Q57,36 45,54 Q46,34 39,20 Z"
-    ahoge = "M-8,-58 C-14,-82 -30,-90 -40,-79 C-28,-80 -20,-71 -16,-57 Z"
-
-    def eye(x):
-        return (f'<g transform="translate({x} 18)"><ellipse rx="10.5" ry="13" fill="{BLACK}"/>'
-                f'<ellipse cy="2" rx="7.6" ry="9.6" fill="{RED}"/><ellipse cy="3.5" rx="3.6" ry="5.2" fill="{BLACK}"/>'
-                f'<circle cx="-3.4" cy="-5" r="3.3" fill="#fff"/><circle cx="3" cy="5.5" r="1.6" fill="#fff"/></g>')
-
-    mask = "M-26,-6 Q0,-17 26,-6 Q28,9 13,8 Q5,7 0,2 Q-5,7 -13,8 Q-28,9 -26,-6Z"
-    rose_clip = (f'<g transform="translate(-37 -33) rotate(-15)">'
-                 f'<path d="M-2,4 Q-17,6 -21,17 Q-8,15 -2,4Z M3,5 Q15,10 14,21 Q5,14 3,5Z" fill="{BLACK}" stroke="#fff" stroke-width="1.5"/>'
-                 f'<circle r="11" fill="{RED}" stroke="#000" stroke-width="2.5"/>'
-                 f'<path d="M-6,1 Q-1,-8 6,-1 Q3,6 -3,4 Q-4,-1 1,-2" fill="none" stroke="{RED_D}" stroke-width="2.2" stroke-linecap="round"/></g>')
-    wave_arm = (f'<g transform="translate(70 62)"><g class="wave">'
-                f'<path d="M-11,0 L11,0 L13,-44 L-8,-46 Z" fill="{BLACK}" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>'
-                f'<ellipse cx="-11" cy="-56" rx="5" ry="7.5" transform="rotate(-30 -11 -56)" fill="#fff" stroke="#000" stroke-width="2.6"/>'
-                f'<ellipse cx="3" cy="-60" rx="13" ry="15" fill="#fff" stroke="#000" stroke-width="3"/>'
-                f'<path d="M-3,-72 L-3,-64 M3,-74 L3,-65 M9,-72 L9,-64" stroke="#000" stroke-width="2" stroke-linecap="round"/></g></g>')
-    return (f'<path d="{hood}" fill="{BLACK}" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>'
-            f'<path d="{rim}" fill="#1c1c1c"/>'
-            f'<path d="{locks}" fill="{BLACK}"/>'
-            f'<ellipse cy="8" rx="48" ry="44" fill="#fff" stroke="#000" stroke-width="3.5"/>'
-            f'<path d="{hair}" fill="{BLACK}" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'
-            f'<path d="{ahoge}" fill="{BLACK}" stroke="#fff" stroke-width="2"/>'
-            f'<path d="M-32,-43 Q-20,-52 -6,-50 M14,-50 Q24,-48 32,-40" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".55"/>'
-            f'<g class="blink">{eye(-19)}{eye(19)}</g>'
-            f'<path d="M-31,7 Q-19,-1 -7,6 M7,6 Q19,-1 31,7" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"/>'
-            f'<ellipse cx="-33" cy="33" rx="7.5" ry="4" fill="{RED}" opacity=".5"/><ellipse cx="33" cy="33" rx="7.5" ry="4" fill="{RED}" opacity=".5"/>'
-            f'<path d="M-9,35 Q-4.5,40 0,35 Q4.5,40 9,35" fill="none" stroke="#000" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>'
-            f'<path d="M3.6,36.6 L6.8,36.4 L5.2,41 Z" fill="#fff" stroke="#000" stroke-width="1.3" stroke-linejoin="round"/>'
-            f'{rose_clip}'
-            f'<g transform="translate(31 -45) rotate(18)"><path d="{mask}" fill="{WHITE}" stroke="#000" stroke-width="2.6" stroke-linejoin="round"/>'
-            f'<ellipse cx="-12" cy="0" rx="6" ry="4" fill="{BLACK}"/><ellipse cx="12" cy="0" rx="6" ry="4" fill="{BLACK}"/></g>'
-            f'<g transform="translate(-58 -54)"><path d="{sparkle(8)}" fill="#fff" stroke="#000" stroke-width="1.5" class="tw"/></g>'
-            f'{wave_arm}')
-
-
-def kai_hand():
-    """The hand gripping the bar edge, drawn in front of the bar. Same origin as kai_head."""
-    return (f'<g transform="translate(-46 50) rotate(-4)">'
-            f'<path d="M-17,-7 Q-17,-17 -7,-17 L9,-17 Q18,-17 18,-7 L18,8 Q18,15 11,15 L-10,15 Q-17,15 -17,8 Z" '
-            f'fill="#fff" stroke="#000" stroke-width="3" stroke-linejoin="round"/>'
-            f'<path d="M-8,3 L-8,15 M0.5,3 L0.5,15 M9,3 L9,15" stroke="#000" stroke-width="2" stroke-linecap="round"/></g>')
-
-
 def tape(cls, y, angle, fill, ink, edge, items, speed, size=15):
     """Tape band with scrolling text, wide enough to still cover the panel when rotated."""
     parts = []
@@ -353,8 +299,8 @@ def syhost_logo(cx, cy):
     leds = "".join(f'<circle cx="{-46 + i * 11}" cy="-35" r="3.6" fill="{c}" stroke="#000" stroke-width="1.2"/>'
                    for i, c in enumerate([WHITE, BLACK, WHITE]))
     return (f'<g transform="translate({cx} {cy})"><g class="pop" style="animation-delay:.5s"><g class="float">'
-            f'<g class="spinR">{pivot(102)}<polygon points="{spiky(13, 86, 68, seed=6)}" fill="{BLACK}" transform="translate(7 7)"/>'
-            f'<polygon points="{spiky(13, 86, 68, seed=6)}" fill="{WHITE}" stroke="#000" stroke-width="4" stroke-linejoin="round"/></g>'
+            f'<g class="spinR">{pivot(96)}<polygon points="{spiky(13, 80, 64, seed=6)}" fill="{BLACK}" transform="translate(7 7)"/>'
+            f'<polygon points="{spiky(13, 80, 64, seed=6)}" fill="{WHITE}" stroke="#000" stroke-width="4" stroke-linejoin="round"/></g>'
             f'<g transform="rotate(-7)">'
             f'<rect x="-56" y="-44" width="116" height="84" rx="7" fill="{RED}" transform="translate(6 6)"/>'
             f'<rect x="-56" y="-44" width="116" height="84" rx="7" fill="{BLACK}" stroke="#000" stroke-width="3"/>'
@@ -375,12 +321,9 @@ def footer():
     ta, ca = tape("tapeA", 58, -7, WHITE, BLACK, BLACK, ["SEE YOU NEXT TIME", "またね", "TAKE YOUR SERVER"], 40)
     tb, cb = tape("tapeB", 104, 5, RED, WHITE, "#fff", ["怪盗カイト", "Re:Kaixen", "ONE BOT. EVERY FEATURE."], -34)
     b.append(f'<g class="fade" style="animation-delay:.1s">{ta}{tb}</g>')
-    peek = '<g transform="translate(500 80) scale(1.25)"><g class="peek" style="animation-delay:.35s"><g class="bobK">{}</g></g></g>'
-    b.append(peek.format(kai_head()))
-    # heading bar covers the mascots' lower halves
+    # heading bar
     bar = f"0,150 {W},136 {W},210 0,222"
     b.append(f'<polygon points="{bar}" fill="{RED}" transform="translate(0 10)"/><polygon points="{bar}" fill="{BLACK}" {LIGHT_SAFE}/>')
-    b.append(peek.format(kai_hand()))
     items, tw = ransom("SEE YOU NEXT TIME!", 40, seed=909, styles=["ow", "wb", "ow", "ow", "bw", "wr", "ow", "ow", "wb", "ow", "rw", "ow"], jitter=.8, overlap=.88)
     b.append(place(items, (W - tw) / 2 - 60, 184, delay=.4, step=.04))
     kd, kw = text_d("jpd", "またね", 24, 0, 0)
@@ -397,13 +340,7 @@ def footer():
     b.append(f'<g transform="translate({fmt((W - total) / 2 - 22)} 268)"><g class="pop" style="animation-delay:1.4s"><g class="float">'
              f'<circle r="34" fill="url(#glow)" class="pulse"/><image href="{rose(360)}" x="-30" y="-30" width="60" height="60"/></g></g></g>')
     b.append(petals(10, W, H, seed=12, scale=(.9, 1.7)))
-    css = (PETAL_CSS + ca + cb
-           + ".bobK{animation:bobK 3.2s ease-in-out infinite}@keyframes bobK{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}"
-           + ".peek{animation:peek .9s cubic-bezier(.2,1.4,.4,1) both}@keyframes peek{0%{transform:translateY(120px)}100%{transform:none}}"
-           + ".blink{transform-box:fill-box;transform-origin:50% 50%;animation:blink 4s infinite}"
-           + "@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}"
-           + ".wave{transform-box:fill-box;transform-origin:50% 100%;animation:wave 1.4s ease-in-out infinite}"
-           + "@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(16deg)}}")
-    # everything shifted down so the mascot's head and ahoge never touch the top edge
-    body = '<g transform="translate(0 50)">' + "".join(b[1:]) + "</g>"
-    return svg_doc(W, H + 50, b[0] + body, css=css, title="See you next time! — kait")
+    css = (PETAL_CSS + ca + cb)
+    # shifted down a little so the tilted tapes have room at the top
+    body = '<g transform="translate(0 20)">' + "".join(b[1:]) + "</g>"
+    return svg_doc(W, H + 20, b[0] + body, css=css, title="See you next time! — kait")

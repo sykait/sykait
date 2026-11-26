@@ -44,11 +44,11 @@ def hero():
     b.append(place(items, 62, 172, delay=.35, step=.12))
 
     # speech bubble
-    bx, by = 548, 82
+    bx, by = 548, 96
     hi, hw = ransom("HI!", 34, seed=12, styles=["bo", "wr", "bo"], jitter=.5)
     b.append(f'<g transform="translate({bx} {by})"><g class="pop" style="animation-delay:1.05s"><g class="wig">'
-             f'<polygon points="{spiky(11, 64, 46, seed=5, wobble=.18)}" fill="{BLACK}" transform="translate(6 6)"/>'
-             f'<polygon points="{spiky(11, 64, 46, seed=5, wobble=.18)}" fill="{WHITE}" stroke="{BLACK}" stroke-width="4" stroke-linejoin="round"/>'
+             f'<polygon points="{spiky(11, 58, 42, seed=5, wobble=.18)}" fill="{BLACK}" transform="translate(6 6)"/>'
+             f'<polygon points="{spiky(11, 58, 42, seed=5, wobble=.18)}" fill="{WHITE}" stroke="{BLACK}" stroke-width="4" stroke-linejoin="round"/>'
              f'{place(hi, -hw / 2 - 6, -4, pop=None, bob=None)}'
              f'<g transform="translate(30 -24)"><path class="beat" d="{heart(20)}" fill="{RED}" stroke="{BLACK}" stroke-width="2.5"/></g>'
              f"</g></g></g>")
@@ -69,7 +69,7 @@ def hero():
              f'<g transform="translate(0 0)"><path class="bob" d="{nd}" fill="{RED}" stroke="#fff" stroke-width="1"/></g></g>')
 
     # rose emblem
-    b.append(rose_emblem(790, 200, 300, 186, 150, .55))
+    b.append(rose_emblem(772, 206, 276, 168, 136, .55))
 
     # vertical kanji strip
     d = vtext_d("jp", "怪盗カイト", 23, 983, 34, gap=1.12)
@@ -249,7 +249,7 @@ def trailer():
     b.append(sparkles([(60, 160, 10, .2), (905, 210, 12, 1.1), (150, 470, 9, 1.8), (880, 455, 11, .7)]))
     css = (PETAL_CSS
            + ".kb{transform-box:fill-box;transform-origin:50% 50%;animation:kb 14s ease-in-out infinite alternate}"
-           + "@keyframes kb{0%{transform:scale(1.02) translate(0,0)}100%{transform:scale(1.12) translate(-14px,6px)}}"
+           + "@keyframes kb{0%{transform:scale(1)}100%{transform:scale(1.035)}}"
            + ".beatS{transform-box:fill-box;transform-origin:50% 50%;animation:beatS 1.8s ease-in-out infinite}"
            + "@keyframes beatS{0%,100%{transform:scale(1)}12%{transform:scale(1.1)}24%{transform:scale(.98)}36%{transform:scale(1.05)}}"
            + ".blink{animation:blink 1.2s steps(2,start) infinite}@keyframes blink{to{visibility:hidden}}"
