@@ -156,9 +156,9 @@ LANG_COLORS = [RED, WHITE, "#8a8a8a", RED_D, "#d4d4d4", "#4a4a4a"]
 
 def stats_panel(s):
     W, H = 1000, 360
-    b = ['<defs>' + halftone_defs("sdots", "shm", 1, 0, .5, 1, color=RED, op=.3) + '</defs>']
+    b = ['<defs>' + tile_tex_defs() + halftone_defs("sdots", "shm", 1, 0, .5, 1, color=RED, op=.3) + '</defs>']
     b.append(f'<rect width="{W}" height="{H}" fill="{BLACK}"/><rect width="{W}" height="{H}" fill="url(#sdots)" mask="url(#shm)"/>')
-    b.append(f'<g class="slideR"><polygon points="640,-10 1010,-10 1010,370 560,370" fill="{RED}"/>'
+    b.append(f'<g class="slideR">{red_tex("prslab", "640,-10 1010,-10 1010,370 560,370", rays=(820, 190))}'
              f'<polygon points="640,-10 1010,-10 1010,370 560,370" fill="none" stroke="#fff" stroke-width="4" transform="translate(-14 0)"/></g>')
     items, tw = ransom("PLAYER RECORD", 36, seed=515, styles=["wb", "ow", "bw", "ow", "wr", "ow", "ow", "wb", "ow", "rw", "ow", "bw"], jitter=.7, overlap=.88)
     b.append(place(items, 30, 50, delay=.15, step=.04))
@@ -178,7 +178,8 @@ def stats_panel(s):
                  f'<clipPath id="st{i}"><polygon points="0,4 172,0 168,104 -4,108"/></clipPath>'
                  f'<polygon points="0,4 172,0 168,104 -4,108" fill="#000" stroke="#fff" stroke-width="1.5" transform="translate(12 12)"/>'
                  f'<polygon points="0,4 172,0 168,104 -4,108" fill="{BLACK if box != BLACK else RED}" transform="translate(6 6)" stroke="#fff" stroke-width="2"/>'
-                 f'<polygon points="0,4 172,0 168,104 -4,108" fill="{box}" stroke="{BLACK}" stroke-width="3"/>'
+                 f'<polygon points="0,4 172,0 168,104 -4,108" fill="{"url(#tileg)" if box == RED else box}" stroke="{BLACK}" stroke-width="3"/>'
+                 + (f'<g clip-path="url(#st{i})">{tile_dots(220, 160)}</g>' if box == RED else "") +
                  f'{num}<path d="{ld}" fill="{ink}" opacity=".85"/>'
                  f'<g clip-path="url(#st{i})"><g class="shine" style="animation-delay:{2.4 + i * .3:.1f}s"><polygon points="0,0 34,0 0,120 -34,120" fill="#fff" opacity=".35"/></g></g>'
                  f'</g></g></g>')
@@ -318,13 +319,13 @@ def status_panel(hist, bot):
     W, H = 1000, 430
     last = hist[-1]
     up = 200 <= last["code"] < 400
-    b = ['<defs>' + glow_def() + halftone_defs("stdots", "stm", 1, 0, .3, 1, color=RED, op=.28) + '</defs>']
+    b = ['<defs>' + glow_def() + tile_tex_defs() + halftone_defs("stdots", "stm", 1, 0, .3, 1, color=RED, op=.28) + '</defs>']
     b.append(f'<rect width="{W}" height="{H}" fill="{BLACK}"/><rect width="{W}" height="{H}" fill="url(#stdots)" mask="url(#stm)"/>')
     b.append(f'<g transform="translate(700 210)"><g class="spin"><path d="{starburst(28, 760)}" fill="{RED}" opacity=".06"/></g></g>')
     gd, gw = text_d("anton", "RE:KAIXEN RE:KAIXEN", 170, 300, 300, tracking=4)
     b.append(f'<g class="ghost"><path d="{gd}" fill="none" stroke="#fff" stroke-width="2" opacity=".07"/></g>')
     # left slab: title + emblem
-    b.append(f'<g class="slideR"><polygon points="0,0 330,0 268,{H} 0,{H}" fill="{RED}"/>'
+    b.append(f'<g class="slideR">{red_tex("stslab", f"0,0 330,0 268,{H} 0,{H}", rays=(140, 262))}'
              f'<polygon points="338,0 350,0 288,{H} 276,{H}" fill="#fff"/></g>')
     items, tw = ransom("STATUS", 42, seed=717, styles=["wb", "bw", "wr", "bw", "wb", "bw"], jitter=.8)
     b.append(place(items, 30, 66, delay=.15, step=.06))
@@ -384,7 +385,8 @@ def status_panel(hist, bot):
                  f'<clipPath id="{cid}"><polygon points="{shape}"/></clipPath>'
                  f'<polygon points="{shape}" fill="#000" stroke="#fff" stroke-width="1.5" transform="translate(10 10)"/>'
                  f'<polygon points="{shape}" fill="{BLACK if box != BLACK else RED}" stroke="#fff" stroke-width="2" transform="translate(5 5)"/>'
-                 f'<polygon points="{shape}" fill="{box}" stroke="#000" stroke-width="3"/>'
+                 f'<polygon points="{shape}" fill="{"url(#tileg)" if box == RED else box}" stroke="#000" stroke-width="3"/>'
+                 + (f'<g clip-path="url(#{cid})">{tile_dots()}</g>' if box == RED else "") +
                  f'{num}<path d="{labd}" fill="{ink}"/><path d="{jd}" fill="{ink}" opacity=".7"/>'
                  f'<g clip-path="url(#{cid})"><g class="shine" style="animation-delay:{2.2 + i * .35:.2f}s"><polygon points="0,0 30,0 0,130 -30,130" fill="#fff" opacity=".35"/></g></g>'
                  f'</g></g></g>')

@@ -57,6 +57,34 @@ def rose_emblem(cx, cy, img, frame_out, frame_in, delay, seed=3):
             f"</g></g></g>")
 
 
+def red_tex(uid, pts, rays=None, dots_op=.42):
+    """Textured red area (like the Re:Kaixen panel): diagonal red gradient, fading halftone dots
+    and, optionally, faint slowly turning rays. Flat red is tiring to look at."""
+    out = (f'<defs><linearGradient id="{uid}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff1a2e"/>'
+           f'<stop offset=".6" stop-color="#e60012"/><stop offset="1" stop-color="#a8000d"/></linearGradient>'
+           + halftone_defs(f"{uid}d", f"{uid}m", 0, 1, .7, 0, r=2.4, op=dots_op)
+           + f'<clipPath id="{uid}c"><polygon points="{pts}"/></clipPath></defs>'
+           f'<polygon points="{pts}" fill="url(#{uid}g)"/>'
+           f'<g clip-path="url(#{uid}c)">')
+    if rays:
+        out += (f'<g transform="translate({rays[0]} {rays[1]})"><g class="spin">'
+                f'<path d="{starburst(24, 700)}" fill="#fff" opacity=".07"/></g></g>')
+    out += f'<rect x="-50" y="-50" width="2000" height="2000" fill="url(#{uid}d)" mask="url(#{uid}m)"/></g>'
+    return out
+
+
+def tile_tex_defs():
+    """Shared gradient + dots for small red tiles (use fill="url(#tileg)" and tile_dots())."""
+    return ('<linearGradient id="tileg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff2236"/>'
+            '<stop offset="1" stop-color="#b3000e"/></linearGradient>'
+            '<pattern id="tiled" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">'
+            '<circle cx="4.5" cy="4.5" r="1.7" fill="#000" opacity=".22"/></pattern>')
+
+
+def tile_dots(w=200, h=200):
+    return f'<rect x="-20" y="-20" width="{w}" height="{h}" fill="url(#tiled)"/>'
+
+
 def glow_def():
     return ('<radialGradient id="glow"><stop offset="0" stop-color="#ff1f3a" stop-opacity=".9"/>'
             '<stop offset=".6" stop-color="#e60012" stop-opacity=".35"/><stop offset="1" stop-color="#e60012" stop-opacity="0"/></radialGradient>')

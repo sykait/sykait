@@ -375,7 +375,7 @@ def arsenal():
         k_total += len(tools)
     ROW, GAP, TOP = 70, 34, 44
     H = TOP + sum(len(r) * ROW for _, _, r in groups) + GAP * (len(groups) - 1) + 58
-    b = ['<defs>' + halftone_defs("adots", "am", 0, 0, 1, 1, color=RED, op=.22) + '</defs>']
+    b = ['<defs>' + tile_tex_defs() + halftone_defs("adots", "am", 0, 0, 1, 1, color=RED, op=.22) + '</defs>']
     # layered backdrop: black slab, red slab peeking out, white outline, halftone
     b.append(f'<g class="fade"><polygon points="14,10 {W - 6},4 {W - 14},{H - 8} 6,{H - 2}" fill="{RED}" transform="translate(10 8)"/>'
              f'<polygon points="14,10 {W - 6},4 {W - 14},{H - 8} 6,{H - 2}" fill="{BLACK}" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>'
@@ -390,7 +390,9 @@ def arsenal():
         lx = 40
         b.append(f'<g class="slideL" style="animation-delay:{.1 + gi * .2:.1f}s">'
                  f'<polygon points="{lx - 10},{cy - 40} {lx + 186},{cy - 46} {lx + 178},{cy + 30} {lx - 16},{cy + 34}" fill="{RED}" transform="translate(7 6)"/>'
-                 f'<polygon points="{lx - 10},{cy - 40} {lx + 186},{cy - 46} {lx + 178},{cy + 30} {lx - 16},{cy + 34}" fill="{WHITE if gi else RED}" stroke="#000" stroke-width="3"/></g>')
+                 f'<clipPath id="lbl{gi}"><polygon points="{lx - 10},{cy - 40} {lx + 186},{cy - 46} {lx + 178},{cy + 30} {lx - 16},{cy + 34}"/></clipPath>'
+                 f'<polygon points="{lx - 10},{cy - 40} {lx + 186},{cy - 46} {lx + 178},{cy + 30} {lx - 16},{cy + 34}" fill="{WHITE if gi else "url(#tileg)"}" stroke="#000" stroke-width="3"/>'
+                 + ("" if gi else f'<g clip-path="url(#lbl{gi})"><g transform="translate({lx} {fmt(cy - 50)})">{tile_dots(240, 120)}</g></g>') + '</g>')
         b.append(place(items, lx + (170 - tw) / 2, cy + 2, delay=.25 + gi * .2, step=.06, bob="hopL", bob_step=.1, bob_delay=1.5 + gi))
         b.append(f'<g transform="translate({fmt(lx + 170 - jw)} {fmt(cy + 50)}) rotate(-4)"><g class="pop" style="animation-delay:{.6 + gi * .2:.1f}s"><g class="wig">'
                  f'<polygon points="-7,-21 {fmt(jw + 7)},-23 {fmt(jw + 9)},7 -5,8" fill="{BLACK}" stroke="#fff" stroke-width="2"/><path d="{jd}" fill="#fff"/></g></g></g>')
