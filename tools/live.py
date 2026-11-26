@@ -321,7 +321,6 @@ def status_panel(hist, bot):
     b.append(f'<g transform="translate(700 210)"><g class="spin"><path d="{starburst(28, 760)}" fill="{RED}" opacity=".06"/></g></g>')
     gd, gw = text_d("anton", "RE:KAIXEN RE:KAIXEN", 170, 300, 300, tracking=4)
     b.append(f'<g class="ghost"><path d="{gd}" fill="none" stroke="#fff" stroke-width="2" opacity=".07"/></g>')
-    b.append(f'<polygon points="290,14 {W - 12},10 {W - 16},{H - 14} 270,{H - 10}" fill="none" stroke="#fff" stroke-width="1.5" opacity=".18"/>')
     # left slab: title + emblem
     b.append(f'<g class="slideR"><polygon points="0,0 330,0 268,{H} 0,{H}" fill="{RED}"/>'
              f'<polygon points="0,0 330,0 268,{H} 0,{H}" fill="none" stroke="#fff" stroke-width="4" transform="translate(16 0)"/></g>')
@@ -363,23 +362,27 @@ def status_panel(hist, bot):
              ("USERS", "ユーザー", bot["users"] if bot else None),
              ("BOT UPTIME", "稼働時間", fmt_uptime(bot["uptimeMs"]) if bot else None),
              ("RESPONSE", "応答", f"{last['ms']}MS" if up else "—")]
+    # Tiles only ever translate (no rotate/scale animation), so the moving shine and the rolling
+    # digits inside them can't shift a transform origin and make the tiles jump around.
+    tw_, th_ = 128, 112
+    shape = f"0,3 {tw_},0 {tw_ - 3},{th_} -3,{th_ + 3}"
     for i, (lab, jp, val) in enumerate(tiles):
-        x, y = 360 + i * 152, 188
+        x, y = 362 + i * 154, 186
         box, ink = [(WHITE, BLACK), (RED, WHITE), (WHITE, BLACK), (RED, WHITE)][i]
-        rot = [-2, 1.5, -1.2, 2][i]
+        rot = [-1.5, 1, -1, 1.5][i]
         if isinstance(val, int):
-            num, _ = odometer(val, 14, 62, 46, .5 + i * .12, ink=ink)
+            num, _ = odometer(val, 14, 60, 44, .5 + i * .12, ink=ink)
         else:
-            vd, _ = text_d("anton", val or "—", 40, 14, 60)
+            vd, _ = text_d("anton", val or "—", 38, 14, 58)
             num = f'<path d="{vd}" fill="{ink}"/>'
-        labd, _ = text_d("barlowx", lab, 15, 14, 88, tracking=.6)
-        jd, _ = text_d("jp", jp, 12, 14, 106)
+        labd, _ = text_d("barlowx", lab, 15, 14, 84, tracking=.6)
+        jd, _ = text_d("jp", jp, 12, 14, 101)
         cid = f"tc{i}"
-        b.append(f'<g transform="translate({x} {y}) rotate({rot})"><g class="pop" style="animation-delay:{.35 + i * .1:.2f}s"><g class="bob" style="animation-delay:-{i * .7:.1f}s">'
-                 f'<clipPath id="{cid}"><polygon points="0,4 140,0 136,116 -4,120"/></clipPath>'
-                 f'<polygon points="0,4 140,0 136,116 -4,120" fill="#000" stroke="#fff" stroke-width="1.5" transform="translate(12 12)"/>'
-                 f'<polygon points="0,4 140,0 136,116 -4,120" fill="{BLACK if box != BLACK else RED}" stroke="#fff" stroke-width="2" transform="translate(6 6)"/>'
-                 f'<polygon points="0,4 140,0 136,116 -4,120" fill="{box}" stroke="#000" stroke-width="3"/>'
+        b.append(f'<g transform="translate({x} {y}) rotate({rot})"><g class="riseT" style="animation-delay:{.35 + i * .1:.2f}s"><g class="floatT" style="animation-delay:-{i * .8:.1f}s">'
+                 f'<clipPath id="{cid}"><polygon points="{shape}"/></clipPath>'
+                 f'<polygon points="{shape}" fill="#000" stroke="#fff" stroke-width="1.5" transform="translate(10 10)"/>'
+                 f'<polygon points="{shape}" fill="{BLACK if box != BLACK else RED}" stroke="#fff" stroke-width="2" transform="translate(5 5)"/>'
+                 f'<polygon points="{shape}" fill="{box}" stroke="#000" stroke-width="3"/>'
                  f'{num}<path d="{labd}" fill="{ink}"/><path d="{jd}" fill="{ink}" opacity=".7"/>'
                  f'<g clip-path="url(#{cid})"><g class="shine" style="animation-delay:{2.2 + i * .35:.2f}s"><polygon points="0,0 30,0 0,130 -30,130" fill="#fff" opacity=".35"/></g></g>'
                  f'</g></g></g>')
@@ -408,6 +411,8 @@ def status_panel(hist, bot):
            ".blinkL{animation:blinkL 1s steps(1) infinite}@keyframes blinkL{50%{opacity:.15}}"
            ".ecg{stroke-dasharray:22 78;animation:ecg 2.6s linear infinite}@keyframes ecg{0%{stroke-dashoffset:22}100%{stroke-dashoffset:-78}}"
            f".ghost{{animation:ghost 22s linear infinite}}@keyframes ghost{{0%{{transform:translateX(0)}}100%{{transform:translateX(-{gw / 2:.0f}px)}}}}"
+           ".riseT{animation:riseT .6s cubic-bezier(.2,1.3,.4,1) both}@keyframes riseT{0%{opacity:0;transform:translateY(26px)}100%{opacity:1;transform:none}}"
+           ".floatT{animation:floatT 3.4s ease-in-out infinite}@keyframes floatT{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}"
            ".stamp{transform-box:fill-box;transform-origin:50% 50%;animation:stamp .5s cubic-bezier(.3,1.6,.5,1) both}"
            "@keyframes stamp{0%{transform:scale(2.4) rotate(-12deg);opacity:0}100%{transform:none;opacity:1}}")
     return svg_doc(W, H, "".join(b), css=css, title=f"Re:Kaixen is {label}")
