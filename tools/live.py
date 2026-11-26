@@ -133,7 +133,8 @@ def odometer(value, x, y, size, delay, ink=WHITE, font="anton"):
     _, adv, _ = glyph(font, "0", size)
     h = size * 1.05
     out, cx = [], x
-    uid = f"o{abs(hash((x, y, value))) % 99999}"
+    odometer.n = getattr(odometer, "n", 0) + 1  # unique and stable between runs
+    uid = f"odo{odometer.n}"
     out.append(f'<clipPath id="{uid}"><rect x="{fmt(x - 4)}" y="{fmt(y - size * .92)}" width="{fmt(len(s) * adv + 12)}" height="{fmt(size * 1.02)}"/></clipPath><g clip-path="url(#{uid})">')
     for i, ch in enumerate(s):
         if not ch.isdigit():

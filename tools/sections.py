@@ -39,14 +39,15 @@ def section_header(num, title, kanji, seed):
 
 # ================================================================ PLAYER CARD
 
+# honest on purpose: animation is the main skill; code is read and directed, AI writes it
 STATS = [
-    ("ANIMATION", "動き", 1.0, "MASTER"),
-    ("DISCORD BOTS", "ボット", .92, "EXPERT"),
-    ("UI / DESIGN", "デザイン", .8, "SKILLED"),
-    ("SCRIPTING", "スクリプト", .84, "SKILLED"),
+    ("ANIMATION", "動き", .95, "MAIN"),
+    ("AI-ASSISTED DEV", "AI開発", .88, "STRONG"),
+    ("SYSTEM DESIGN", "設計", .8, "SOLID"),
+    ("READING CODE", "読解", .74, "GOOD"),
     ("SLEEP", "睡眠", .12, "???"),
 ]
-TICKER = ["BUILDING Re:Kaixen", "ANIMATING EVERYTHING", "OPEN FOR COLLABS", "ONE BOT. EVERY FEATURE.", "TAKE YOUR SERVER"]
+TICKER = ["BUILDING Re:Kaixen", "ANIMATING IN BLENDER", "ROBLOX ANIMATIONS", "DESIGNED BY ME, BUILT WITH AI", "OPEN FOR COLLABS", "TAKE YOUR SERVER"]
 
 
 def ticker(y, h, W, items, size=17, speed=55, fill=RED):
@@ -80,9 +81,10 @@ def player_card():
     items, nw = ransom("kait", 52, seed=77, styles=["wb", "bw", "wr", "wb"], jitter=1.2)
     b.append(f'<g class="slideL" style="animation-delay:.5s"><polygon points="40,330 300,322 288,392 30,398" fill="{BLACK}" stroke="#fff" stroke-width="3"/></g>')
     b.append(place(items, 60, 360, delay=.65, step=.07))
-    d, w = text_d("bowlby", "LV.MAX", 22, 0, 0)
-    b.append(f'<g transform="translate({fmt(70 + nw)} 372) rotate(-6)"><g class="pop" style="animation-delay:1s">'
-             f'<path d="{d}" fill="{RED}" stroke="#fff" stroke-width="3" paint-order="stroke"/></g></g>')
+    d, w = text_d("jpd", "怪盗", 22, 0, 0)
+    b.append(f'<g transform="translate({fmt(74 + nw)} 372) rotate(-6)"><g class="pop" style="animation-delay:1s"><g class="wig">'
+             f'<polygon points="-7,-25 {fmt(w + 7)},-27 {fmt(w + 9)},7 -5,8" fill="{RED}" stroke="#fff" stroke-width="2.5"/>'
+             f'<path d="{d}" fill="#fff"/></g></g></g>')
 
     # arcana card
     ad, aw = text_d("archivo", "THE FOOL", 11, 0, 0, tracking=1)
@@ -120,8 +122,8 @@ def player_card():
                  f'<path d="{d}" fill="{WHITE}"/><path d="{kd}" fill="{WHITE}" opacity=".55"/>'
                  f'<polygon points="{x1 + 6},{y - 12} {x2 + 6},{y - 15} {x2},{y + 7} {x1},{y + 10}" fill="#262626" stroke="#fff" stroke-width="2"/>'
                  f'<g class="fill" style="animation-delay:{dl + .25:.2f}s"><polygon points="{x1 + 6},{y - 12} {fmt(fx + 6)},{fmt(y - 12 - 3 * val)} {fmt(fx)},{fmt(y + 10 - 3 * val)} {x1},{y + 10}" fill="{RED}"/></g>'
-                 f'<path d="{rd}" fill="{RED if rank == "MASTER" else WHITE}"/></g>')
-        if rank == "MASTER":
+                 f'<path d="{rd}" fill="{RED if rank == "MAIN" else WHITE}"/></g>')
+        if rank == "MAIN":
             b.append(f'<g transform="translate({fmt(896 + rw_ + 14)} {y - 2})"><polygon class="beat" points="{star5(9)}" fill="{WHITE}"/></g>')
 
     # quest line
@@ -344,9 +346,11 @@ def project_card(key):
 # ================================================================ ARSENAL
 
 ARSENAL = [
-    ("CODE", "コード", ["JavaScript", "Node.js", "discord.js", "SQLite", "OpenAI API", "HTML", "CSS", "PowerShell", "Batch"]),
-    ("ANIMATION", "動き", ["Blender", "3D Animation", "Keyframing"]),
+    ("ANIMATION", "動き", ["Blender", "Roblox Animation", "Custom Rigs", "Weapon Animations", "Camera Work", "Framing"]),
+    ("CODE + AI", "AIと開発", ["AI-Assisted Dev", "JavaScript", "Node.js", "discord.js", "SQLite", "OpenAI API",
+                               "HTML / CSS", "PowerShell", "Batch"]),
 ]
+ARSENAL_NOTE = "I plan it, read it and direct it. AI writes the code with me."
 
 
 def arsenal():
@@ -370,7 +374,7 @@ def arsenal():
         groups.append((name, jp, rows))
         k_total += len(tools)
     ROW, GAP, TOP = 70, 34, 44
-    H = TOP + sum(len(r) * ROW for _, _, r in groups) + GAP * (len(groups) - 1) + 30
+    H = TOP + sum(len(r) * ROW for _, _, r in groups) + GAP * (len(groups) - 1) + 58
     b = ['<defs>' + halftone_defs("adots", "am", 0, 0, 1, 1, color=RED, op=.22) + '</defs>']
     # layered backdrop: black slab, red slab peeking out, white outline, halftone
     b.append(f'<g class="fade"><polygon points="14,10 {W - 6},4 {W - 14},{H - 8} 6,{H - 2}" fill="{RED}" transform="translate(10 8)"/>'
@@ -410,6 +414,8 @@ def arsenal():
         y += gh + GAP
         if gi < len(groups) - 1:  # divider between groups
             b.append(f'<g class="grow" style="animation-delay:.8s"><polygon points="{gx0},{y - GAP / 2 - 2} {gx1},{y - GAP / 2 - 6} {gx1},{y - GAP / 2 - 2} {gx0},{y - GAP / 2 + 2}" fill="{RED}"/></g>')
+    nd, nw_ = text_d("mono", "// " + ARSENAL_NOTE, 13, 0, 0)
+    b.append(f'<g class="fade" style="animation-delay:1.6s"><path d="{nd}" transform="translate({fmt(gx0 + (gx1 - gx0 - nw_) / 2)} {H - 26})" fill="#fff" opacity=".6"/></g>')
     cyc = k_total * .45
     css = (f".spot{{transform-box:fill-box;transform-origin:50% 50%;animation:spot {cyc:.1f}s cubic-bezier(.3,1.6,.5,1) infinite both}}"
            f"@keyframes spot{{0%,{100 * .9 / cyc:.1f}%,100%{{transform:none}}{100 * .3 / cyc:.1f}%{{transform:translateY(-11px) scale(1.14) rotate(-5deg)}}}}"

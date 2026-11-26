@@ -13,9 +13,9 @@ PREVIEW_DIR = os.path.dirname(REPO)  # local preview pages live next to the repo
 
 # (kind, file, builder, link, alt, width)
 LAYOUT = [
-    ("img", "hero.svg", hero, LINKS["site"], "kait: developer, animator, founder of Re:Kaixen", "100%"),
+    ("img", "hero.svg", hero, LINKS["site"], "kait: animator, builds with AI, founder of Re:Kaixen", "100%"),
     ("img", "h01.svg", lambda: section_header("01", "ABOUT ME", "自己紹介", 11), None, "01 About me", "100%"),
-    ("img", "player.svg", player_card, None, "Player status: animation MASTER, Discord bots EXPERT, current quest Re:Kaixen", "100%"),
+    ("img", "player.svg", player_card, None, "Player status: animation is the main skill, strong at AI-assisted development, current quest Re:Kaixen", "100%"),
     ("img", "h02.svg", lambda: section_header("02", "MAIN QUEST", "本命", 22), None, "02 Main quest", "100%"),
     ("img", "rekaixen.svg", rekaixen, LINKS["site"], "Re:Kaixen: one Discord bot, every feature, with a built-in AI assistant", "100%"),
     ("img", "trailer.svg", trailer, LINKS["trailer"], "Watch the Re:Kaixen trailer: Take Your Server", "100%"),
@@ -25,7 +25,7 @@ LAYOUT = [
     ("row", [("card-rekaixen.svg", lambda: project_card("rekaixen"), LINKS["site"], "Re:Kaixen project card"),
              ("card-syhost.svg", lambda: project_card("syhost"), "https://github.com/sykait/SyHost", "SyHost project card")], "49%"),
     ("img", "h04.svg", lambda: section_header("04", "ARSENAL", "武器", 44), None, "04 Arsenal", "100%"),
-    ("img", "arsenal.svg", arsenal, None, "Arsenal. Code: JavaScript, Node.js, discord.js, SQLite, OpenAI API, HTML, CSS, PowerShell, Batch. Animation: Blender, 3D animation, keyframing", "100%"),
+    ("img", "arsenal.svg", arsenal, None, "Arsenal. Animation: Blender, Roblox animation, custom rigs, weapon animations, camera work, framing. Code with AI: JavaScript, Node.js, discord.js, SQLite, OpenAI API, HTML/CSS, PowerShell, Batch", "100%"),
     ("img", "h05.svg", lambda: section_header("05", "LIVE FEED", "記録", 55), None, "05 Live feed", "100%"),
     ("live", "live-stats.svg", None, None, "GitHub stats: repos, stars, followers, contributions, streaks and top languages", "100%"),
     ("live", "live-skyline.svg", None, None, "Last year of contributions as a skyline", "100%"),

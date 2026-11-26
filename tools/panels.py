@@ -54,8 +54,8 @@ def hero():
              f"</g></g></g>")
 
     # subtitle strip
-    segs = ["DEVELOPER", "ANIMATOR", "FOUNDER OF Re:Kaixen"]
-    st, sw = strip_text(segs, 23, 70, 291)
+    segs = ["ANIMATOR", "BUILDS WITH AI", "FOUNDER OF Re:Kaixen"]
+    st, sw = strip_text(segs, 21, 70, 290)
     x2 = 70 + sw + 26
     poly = f"46,262 {fmt(x2 + 14)},256 {fmt(x2 - 2)},304 36,310"
     b.append(f'<g class="slideL" style="animation-delay:.7s"><polygon points="{poly}" fill="{RED}" transform="translate(9 8)"/>'
@@ -84,7 +84,7 @@ def hero():
 
     b.append(sparkles([(648, 62, 15, 0), (948, 96, 11, .8), (668, 322, 12, 1.5), (928, 338, 17, .4),
                        (622, 196, 9, 1.9), (336, 58, 9, 1.1), (478, 360, 11, .6), (230, 375, 8, 2.1)]))
-    return svg_doc(W, H, "".join(b), title="kait — developer, animator, founder of Re:Kaixen")
+    return svg_doc(W, H, "".join(b), title="kait — animator, builds with AI, founder of Re:Kaixen")
 
 
 # ================================================================ REKAIXEN
