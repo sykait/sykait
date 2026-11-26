@@ -173,10 +173,13 @@ def stats_panel(s):
         rot = [-2, 1.5, -1, 2, -1.5, 1][i]
         num, nw = odometer(val, 18, 66, 52, .4 + i * .1, ink=ink)
         ld, lw = text_d("barlowx", label, 15, 18, 92, tracking=.6)
-        b.append(f'<g transform="translate({x} {y}) rotate({rot})"><g class="pop" style="animation-delay:{.25 + i * .08:.2f}s">'
+        b.append(f'<g transform="translate({x} {y}) rotate({rot})"><g class="pop" style="animation-delay:{.25 + i * .08:.2f}s"><g class="bob" style="animation-delay:-{i * .55:.2f}s">'
+                 f'<clipPath id="st{i}"><polygon points="0,4 172,0 168,104 -4,108"/></clipPath>'
                  f'<polygon points="0,4 172,0 168,104 -4,108" fill="{BLACK if box != BLACK else RED}" transform="translate(6 6)" stroke="#fff" stroke-width="2"/>'
                  f'<polygon points="0,4 172,0 168,104 -4,108" fill="{box}" stroke="{BLACK}" stroke-width="3"/>'
-                 f'{num}<path d="{ld}" fill="{ink}" opacity=".85"/></g></g>')
+                 f'{num}<path d="{ld}" fill="{ink}" opacity=".85"/>'
+                 f'<g clip-path="url(#st{i})"><g class="shine" style="animation-delay:{2.4 + i * .3:.1f}s"><polygon points="0,0 34,0 0,120 -34,120" fill="#fff" opacity=".35"/></g></g>'
+                 f'</g></g></g>')
     # languages
     langs = sorted(s["langs"].items(), key=lambda kv: -kv[1])[:6]
     total = sum(v for _, v in langs) or 1
@@ -189,8 +192,10 @@ def stats_panel(s):
         w = (x1 - x0) * v / total
         segs.append(f'<rect x="{fmt(cx)}" y="{by}" width="{fmt(max(w, 2))}" height="22" fill="{LANG_COLORS[i]}" stroke="#000" stroke-width="2"/>')
         cx += w
-    b.append(f'<rect x="{x0 - 6}" y="{by - 6}" width="{x1 - x0 + 12}" height="34" fill="{BLACK}" stroke="#fff" stroke-width="2"/>'
-             f'<g class="growL" style="animation-delay:.6s">{"".join(segs)}</g>')
+    b.append(f'<clipPath id="lbar"><rect x="{x0}" y="{by}" width="{x1 - x0}" height="22"/></clipPath>'
+             f'<rect x="{x0 - 6}" y="{by - 6}" width="{x1 - x0 + 12}" height="34" fill="{BLACK}" stroke="#fff" stroke-width="2"/>'
+             f'<g class="growL" style="animation-delay:.6s">{"".join(segs)}</g>'
+             f'<g clip-path="url(#lbar)"><g class="sweep"><rect x="{x0 - 80}" y="{by}" width="60" height="22" fill="#fff" opacity=".35"/></g></g>')
     for i, (name, v) in enumerate(langs):
         y = 172 + i * 30
         nd, _ = text_d("barlowx", name.upper(), 20, 690, y + 7)
@@ -203,7 +208,9 @@ def stats_panel(s):
     stamp = dt.datetime.now(dt.timezone.utc).strftime("UPDATED %Y-%m-%d %H:%M UTC")
     sd, sw = text_d("mono", stamp, 12, 0, 0)
     b.append(f'<g transform="translate({fmt(W - sw - 24)} 344)"><path d="{sd}" fill="#fff" opacity=".7"/></g>')
+    b.append(sparkles([(600, 28, 9, .5), (975, 330, 8, 1.6), (40, 330, 8, 2.4)]))
     css = (".roll{animation:roll 1.6s cubic-bezier(.2,.8,.2,1) both}@keyframes roll{0%{transform:translateY(0)}100%{transform:translateY(var(--to))}}"
+           ".sweep{animation:sweep 3.8s ease-in-out 2s infinite}@keyframes sweep{0%{transform:translateX(0)}60%,100%{transform:translateX(420px)}}"
            ".growL{transform-box:fill-box;transform-origin:0 50%;animation:growL 1.2s cubic-bezier(.2,.9,.2,1) both}@keyframes growL{0%{transform:scaleX(0)}100%{transform:none}}")
     return svg_doc(W, H, "".join(b), css=css, title="GitHub stats for sykait")
 
@@ -269,61 +276,146 @@ def skyline_panel(days):
             name = dt.date.fromisoformat(week[0][0]).strftime("%b").upper()
             md, _ = text_d("barlowx", name, 13, ox + w * cw, 328)
             b.append(f'<path d="{md}" fill="#fff" opacity=".6"/>')
-    css = ".rise{transform-box:fill-box;transform-origin:50% 100%;animation:rise .9s cubic-bezier(.2,1.3,.4,1) both}@keyframes rise{0%{transform:scaleY(0)}100%{transform:none}}"
+    b.append('<defs><linearGradient id="scan" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/>'
+             '<stop offset=".5" stop-color="#ff2a3c" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>'
+             f'<g class="scan"><rect x="-220" y="70" width="200" height="{H - 70}" fill="url(#scan)"/></g>')
+    b.append(sparkles([(160, 110, 9, .4), (420, 96, 8, 1.3), (700, 120, 10, 2.2), (880, 100, 7, .9), (300, 140, 7, 1.8)]))
+    css = (".rise{transform-box:fill-box;transform-origin:50% 100%;animation:rise .9s cubic-bezier(.2,1.3,.4,1) both}@keyframes rise{0%{transform:scaleY(0)}100%{transform:none}}"
+           ".scan{animation:scan 6s ease-in-out 1.5s infinite}@keyframes scan{0%{transform:translateX(0)}70%,100%{transform:translateX(1240px)}}")
     return svg_doc(W, H, "".join(b), css=css, title=f"{total} contributions in the last year as a skyline")
 
 
-def status_panel(hist):
-    W, H = 1000, 200
+def bot_stats():
+    """Public numbers from the Re:Kaixen site (/api/stats). Falls back to the last good reading."""
+    path = os.path.join(DATA, "bot-stats.json")
+    try:
+        _, body = http(STATUS_URL + "/api/stats", headers={"Accept": "application/json"}, timeout=15)
+        j = json.loads(body)
+        data = {"guilds": int(j.get("guilds") or 0), "users": int(j.get("users") or 0),
+                "uptimeMs": int(j.get("uptimeMs") or 0), "live": True}
+        os.makedirs(DATA, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump({k: v for k, v in data.items() if k != "live"}, f)
+        return data
+    except Exception:
+        if os.path.exists(path):
+            with open(path, encoding="utf-8") as f:
+                return dict(json.load(f), live=False)
+        return None
+
+
+def fmt_uptime(ms):
+    m = ms // 60000
+    d, h, mm = m // 1440, (m % 1440) // 60, m % 60
+    return f"{d}D {h}H" if d else f"{h}H {mm}M"
+
+
+def status_panel(hist, bot):
+    W, H = 1000, 430
     last = hist[-1]
     up = 200 <= last["code"] < 400
-    b = [f'<rect width="{W}" height="{H}" fill="{BLACK}"/>']
-    b.append(f'<polygon points="0,0 300,0 250,{H} 0,{H}" fill="{RED}"/>')
-    items, tw = ransom("STATUS", 32, seed=717, styles=["wb", "bw", "wr", "bw", "wb", "bw"], jitter=.7)
-    b.append(place(items, 28, 46, delay=.1, step=.05))
-    kd, kw = text_d("jpd", "稼働状況", 15, 34, 92)
-    b.append(f'<g class="fade" style="animation-delay:.4s"><path d="{kd}" fill="#fff"/></g>')
-    b.append(f'<g transform="translate(70 145)"><g class="pop" style="animation-delay:.5s"><g class="float">'
-             f'<circle r="32" fill="url(#glow)" class="pulse"/><image href="{rose(360)}" x="-30" y="-30" width="60" height="60"/></g></g></g>')
-    nd, nw = text_d("archivo", "Re:Kaixen", 30, 300, 66)
-    ud, uw = text_d("mono", "re.kaixen.online", 15, 300, 92)
-    b.append(f'<g class="slideR" style="animation-delay:.2s"><path d="{nd}" fill="#fff"/><path d="{ud}" fill="#fff" opacity=".6"/></g>')
+    b = ['<defs>' + glow_def() + halftone_defs("stdots", "stm", 1, 0, .3, 1, color=RED, op=.28) + '</defs>']
+    b.append(f'<rect width="{W}" height="{H}" fill="{BLACK}"/><rect width="{W}" height="{H}" fill="url(#stdots)" mask="url(#stm)"/>')
+    b.append(f'<g transform="translate(700 210)"><g class="spin"><path d="{starburst(28, 760)}" fill="{RED}" opacity=".06"/></g></g>')
+    # left slab: title + emblem
+    b.append(f'<g class="slideR"><polygon points="0,0 330,0 268,{H} 0,{H}" fill="{RED}"/>'
+             f'<polygon points="0,0 330,0 268,{H} 0,{H}" fill="none" stroke="#fff" stroke-width="4" transform="translate(16 0)"/></g>')
+    items, tw = ransom("STATUS", 42, seed=717, styles=["wb", "bw", "wr", "bw", "wb", "bw"], jitter=.8)
+    b.append(place(items, 30, 66, delay=.15, step=.06))
+    kd, kw = text_d("jpd", "稼働状況", 18, 0, 0)
+    b.append(f'<g transform="translate(36 108) rotate(-4)"><g class="pop" style="animation-delay:.6s">'
+             f'<polygon points="-8,-24 {fmt(kw + 8)},-26 {fmt(kw + 10)},8 -6,9" fill="{BLACK}" stroke="#fff" stroke-width="2"/><path d="{kd}" fill="#fff"/></g></g>')
+    b.append(rose_emblem(140, 262, 150, 94, 76, .45, seed=17))
+    ld, lw = text_d("archivo", "LIVE", 15, 0, 0, tracking=2)
+    b.append(f'<g transform="translate(34 398) rotate(-3)"><g class="pop" style="animation-delay:.9s">'
+             f'<polygon points="-6,-20 {fmt(lw + 40)},-22 {fmt(lw + 37)},8 -9,9" fill="{BLACK}" stroke="#fff" stroke-width="2"/>'
+             f'<circle cx="10" cy="-6" r="6" fill="{RED}" class="blinkL"/><path d="{ld}" transform="translate(24 0)" fill="#fff"/></g></g>')
+    # header: name, url, online stamp, response
+    nd, nw = text_d("archivo", "Re:Kaixen", 36, 360, 74)
+    ud, uw = text_d("mono", "re.kaixen.online", 15, 362, 100)
+    b.append(f'<g class="slideL" style="animation-delay:.2s"><path d="{nd}" fill="#fff"/><path d="{ud}" fill="#fff" opacity=".6"/></g>')
     label = "ONLINE" if up else "DOWN"
-    ld, lw = text_d("anton", label, 34, 0, 0)
-    b.append(f'<g transform="translate({fmt(320 + nw + 40)} 70) rotate(-4)"><g class="pop" style="animation-delay:.6s">'
-             f'<polygon points="-14,-38 {fmt(lw + 44)},-41 {fmt(lw + 40)},8 -18,10" fill="{WHITE if up else RED}" stroke="#000" stroke-width="3"/>'
-             f'<circle cx="2" cy="-15" r="8" fill="{RED if up else WHITE}" class="ping"/>'
-             f'<path d="{ld}" transform="translate(18 0)" fill="{BLACK if up else WHITE}"/></g></g>')
-    md, mw = text_d("anton", f"{last['code'] or 'ERR'} · {last['ms']} MS", 26, W - 30, 70, anchor="end")
-    b.append(f'<g class="slideR" style="animation-delay:.5s"><path d="{md}" fill="#fff"/></g>')
-    # history bars
+    sd, sw = text_d("anton", label, 36, 0, 0)
+    b.append(f'<g transform="translate({fmt(380 + nw + 30)} 80) rotate(-5)"><g class="stamp" style="animation-delay:.7s">'
+             f'<polygon points="-14,-42 {fmt(sw + 46)},-45 {fmt(sw + 42)},9 -18,11" fill="{RED}" transform="translate(6 5)"/>'
+             f'<polygon points="-14,-42 {fmt(sw + 46)},-45 {fmt(sw + 42)},9 -18,11" fill="{WHITE if up else RED}" stroke="#000" stroke-width="3"/>'
+             f'<circle cx="3" cy="-17" r="8" fill="{RED if up else WHITE}"/><circle cx="3" cy="-17" r="8" fill="none" stroke="{RED if up else WHITE}" stroke-width="3" class="ping"/>'
+             f'<path d="{sd}" transform="translate(20 0)" fill="{BLACK if up else WHITE}"/></g></g>')
+    # heartbeat line
+    pts, x = [], 360
+    beat = [(0, 0), (14, 0), (20, -8), (26, 0), (34, 0), (40, 10), (46, -34), (53, 22), (59, 0), (74, 0), (82, -6), (92, 0)]
+    while x < 975:
+        for bx, byy in beat:
+            if x + bx <= 975:
+                pts.append(f"{x + bx},{150 + byy}")
+        x += 128
+    ecg = " ".join(pts)
+    b.append(f'<polyline points="{ecg}" fill="none" stroke="#fff" stroke-width="2" opacity=".15"/>'
+             f'<polyline class="ecg" points="{ecg}" fill="none" stroke="{RED}" stroke-width="7" opacity=".45" stroke-linejoin="round" pathLength="100"/>'
+             f'<polyline class="ecg" points="{ecg}" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round" pathLength="100"/>')
+    # stat tiles
+    tiles = [("SERVERS", "サーバー", bot["guilds"] if bot else None),
+             ("USERS", "ユーザー", bot["users"] if bot else None),
+             ("BOT UPTIME", "稼働時間", fmt_uptime(bot["uptimeMs"]) if bot else None),
+             ("RESPONSE", "応答", f"{last['ms']}MS" if up else "—")]
+    for i, (lab, jp, val) in enumerate(tiles):
+        x, y = 360 + i * 152, 188
+        box, ink = [(WHITE, BLACK), (RED, WHITE), (WHITE, BLACK), (RED, WHITE)][i]
+        rot = [-2, 1.5, -1.2, 2][i]
+        if isinstance(val, int):
+            num, _ = odometer(val, 14, 62, 46, .5 + i * .12, ink=ink)
+        else:
+            vd, _ = text_d("anton", val or "—", 40, 14, 60)
+            num = f'<path d="{vd}" fill="{ink}"/>'
+        labd, _ = text_d("barlowx", lab, 15, 14, 88, tracking=.6)
+        jd, _ = text_d("jp", jp, 12, 14, 106)
+        cid = f"tc{i}"
+        b.append(f'<g transform="translate({x} {y}) rotate({rot})"><g class="pop" style="animation-delay:{.35 + i * .1:.2f}s"><g class="bob" style="animation-delay:-{i * .7:.1f}s">'
+                 f'<clipPath id="{cid}"><polygon points="0,4 140,0 136,116 -4,120"/></clipPath>'
+                 f'<polygon points="0,4 140,0 136,116 -4,120" fill="{BLACK if box != BLACK else RED}" stroke="#fff" stroke-width="2" transform="translate(6 6)"/>'
+                 f'<polygon points="0,4 140,0 136,116 -4,120" fill="{box}" stroke="#000" stroke-width="3"/>'
+                 f'{num}<path d="{labd}" fill="{ink}"/><path d="{jd}" fill="{ink}" opacity=".7"/>'
+                 f'<g clip-path="url(#{cid})"><g class="shine" style="animation-delay:{2.2 + i * .35:.2f}s"><polygon points="0,0 30,0 0,130 -30,130" fill="#fff" opacity=".35"/></g></g>'
+                 f'</g></g></g>')
+    # history
     n = len(hist)
-    x0, x1 = 300, W - 30
+    x0, x1 = 360, W - 30
     bw = (x1 - x0) / 48
     mxms = max([h["ms"] for h in hist] + [1])
+    hd, _ = text_d("archivo", "LAST CHECKS", 12, x0, 340, tracking=1.5)
+    b.append(f'<path d="{hd}" fill="#fff" opacity=".7"/>')
+    # empty slots until the history fills up, so the strip never looks bare
+    b.append("".join(f'<rect x="{fmt(x0 + k * bw)}" y="380" width="{fmt(bw - 3)}" height="12" fill="#fff" opacity=".08"/>' for k in range(48 - n)))
     for i, h in enumerate(hist):
         ok = 200 <= h["code"] < 400
-        bh = 14 + 38 * min(h["ms"] / mxms, 1) if ok else 52
-        x = x1 - (n - i) * bw
-        b.append(f'<g class="rise" style="animation-delay:{.6 + i * .02:.2f}s"><rect x="{fmt(x)}" y="{fmt(170 - bh)}" width="{fmt(bw - 3)}" height="{fmt(bh)}" fill="{WHITE if ok else RED}" opacity="{.55 + .45 * (i == n - 1)}"/></g>')
-    cd, _ = text_d("mono", "CHECKED " + last["t"].replace("T", " ").replace("Z", " UTC"), 12, x0, 192)
+        bh = 12 + 30 * min(h["ms"] / mxms, 1) if ok else 42
+        xx = x1 - (n - i) * bw
+        b.append(f'<g class="rise" style="animation-delay:{.8 + i * .02:.2f}s"><rect x="{fmt(xx)}" y="{fmt(392 - bh)}" width="{fmt(bw - 3)}" height="{fmt(bh)}" fill="{WHITE if ok else RED}" opacity="{.5 + .5 * (i == n - 1)}"/></g>')
+    cd, _ = text_d("mono", "CHECKED " + last["t"].replace("T", " ").replace("Z", " UTC"), 12, x0, 416)
     up_n = sum(1 for h in hist if 200 <= h["code"] < 400)
-    pd, _ = text_d("mono", f"UPTIME {up_n * 100 / n:.1f}% (LAST {n} CHECKS)", 12, x1, 192, anchor="end")
+    pd, _ = text_d("mono", f"UPTIME {up_n * 100 / n:.1f}% · LAST {n} CHECKS", 12, x1, 416, anchor="end")
     b.append(f'<path d="{cd}" fill="#fff" opacity=".6"/><path d="{pd}" fill="#fff" opacity=".6"/>')
+    b.append(sparkles([(330, 30, 10, .4), (980, 120, 9, 1.3), (606, 320, 8, 2.1)]))
     css = (".rise{transform-box:fill-box;transform-origin:50% 100%;animation:rise .7s cubic-bezier(.2,1.3,.4,1) both}@keyframes rise{0%{transform:scaleY(0)}100%{transform:none}}"
-           ".ping{transform-box:fill-box;transform-origin:50% 50%;animation:ping 1.4s ease-out infinite}@keyframes ping{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.6);opacity:.2}}")
-    return svg_doc(W, H, '<defs>' + glow_def() + '</defs>' + "".join(b), css=css, title=f"Re:Kaixen is {label}")
+           ".roll{animation:roll 1.6s cubic-bezier(.2,.8,.2,1) both}@keyframes roll{0%{transform:translateY(0)}100%{transform:translateY(var(--to))}}"
+           ".ping{transform-box:fill-box;transform-origin:50% 50%;animation:ping 1.4s ease-out infinite}@keyframes ping{0%{transform:scale(1);opacity:1}100%{transform:scale(2.6);opacity:0}}"
+           ".blinkL{animation:blinkL 1s steps(1) infinite}@keyframes blinkL{50%{opacity:.15}}"
+           ".ecg{stroke-dasharray:22 78;animation:ecg 2.6s linear infinite}@keyframes ecg{0%{stroke-dashoffset:22}100%{stroke-dashoffset:-78}}"
+           ".stamp{transform-box:fill-box;transform-origin:50% 50%;animation:stamp .5s cubic-bezier(.3,1.6,.5,1) both}"
+           "@keyframes stamp{0%{transform:scale(2.4) rotate(-12deg);opacity:0}100%{transform:none;opacity:1}}")
+    return svg_doc(W, H, "".join(b), css=css, title=f"Re:Kaixen is {label}")
 
 
 def main():
     os.makedirs(ASSETS, exist_ok=True)
     s = stats()
     hist = check_status()
-    for fn, svg in [("live-stats.svg", stats_panel(s)), ("live-skyline.svg", skyline_panel(s["days"])), ("live-status.svg", status_panel(hist))]:
+    bot = bot_stats()
+    for fn, svg in [("live-stats.svg", stats_panel(s)), ("live-skyline.svg", skyline_panel(s["days"])), ("live-status.svg", status_panel(hist, bot))]:
         with open(os.path.join(ASSETS, fn), "w", encoding="utf-8") as f:
             f.write(svg)
         print(f"{fn:18} {len(svg.encode()) / 1024:7.1f} KB")
-    print(f"contrib={s['contrib']} streak={s['streak']}/{s['best']} repos={s['repos']} stars={s['stars']} langs={list(s['langs'])} status={hist[-1]}")
+    print(f"contrib={s['contrib']} streak={s['streak']}/{s['best']} repos={s['repos']} stars={s['stars']} langs={list(s['langs'])} status={hist[-1]} bot={bot}")
 
 
 if __name__ == "__main__":

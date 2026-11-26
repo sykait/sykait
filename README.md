@@ -13,7 +13,7 @@
 
 <a href="https://www.youtube.com/watch?v=Ne1W0aU2w2E"><img src="assets/trailer.svg" width="100%" alt="Watch the Re:Kaixen trailer: Take Your Server"/></a>
 
-<a href="https://re.kaixen.online"><img src="assets/btn-site.svg" height="72" alt="Re:Kaixen website"/></a> <a href="https://discord.gg/kaixen"><img src="assets/btn-server.svg" height="72" alt="Join the Re:Kaixen Discord server"/></a>
+<a href="https://re.kaixen.online"><img src="assets/btn-site.svg" height="84" alt="Re:Kaixen website"/></a> <a href="https://discord.gg/kaixen"><img src="assets/btn-server.svg" height="84" alt="Join the Re:Kaixen Discord server"/></a>
 
 <img src="assets/h03.svg" width="100%" alt="03 Projects"/>
 
@@ -33,7 +33,7 @@
 
 <img src="assets/h06.svg" width="100%" alt="06 Contact"/>
 
-<a href="https://discord.com/users/995728579868512308"><img src="assets/btn-discord.svg" height="72" alt="Add kait on Discord"/></a> <a href="https://x.com/soytarikait"><img src="assets/btn-x.svg" height="72" alt="Follow @soytarikait on X"/></a>
+<a href="https://discord.com/users/995728579868512308"><img src="assets/btn-discord.svg" height="70" alt="Add kait on Discord"/></a> <a href="https://x.com/soytarikait"><img src="assets/btn-x.svg" height="70" alt="Follow @soytarikait on X"/></a> <a href="https://discord.gg/kaixen"><img src="assets/btn-join.svg" height="70" alt="Join the Re:Kaixen Discord server"/></a>
 
 <img src="assets/footer.svg" width="100%" alt="See you next time!"/>
 

@@ -20,7 +20,7 @@ LAYOUT = [
     ("img", "rekaixen.svg", rekaixen, LINKS["site"], "Re:Kaixen: one Discord bot, every feature, with a built-in AI assistant", "100%"),
     ("img", "trailer.svg", trailer, LINKS["trailer"], "Watch the Re:Kaixen trailer: Take Your Server", "100%"),
     ("row", [("btn-site.svg", lambda: button("VISIT WEBSITE", "公式サイト", RED, 1), LINKS["site"], "Re:Kaixen website"),
-             ("btn-server.svg", lambda: button("JOIN DISCORD", "サーバー参加", RED, 2), LINKS["server"], "Join the Re:Kaixen Discord server")], "72"),
+             ("btn-server.svg", lambda: button("JOIN DISCORD", "サーバー参加", RED, 2), LINKS["server"], "Join the Re:Kaixen Discord server")], "84"),
     ("img", "h03.svg", lambda: section_header("03", "PROJECTS", "作品", 33), None, "03 Projects", "100%"),
     ("row", [("card-rekaixen.svg", lambda: project_card("rekaixen"), LINKS["site"], "Re:Kaixen project card"),
              ("card-syhost.svg", lambda: project_card("syhost"), "https://github.com/sykait/SyHost", "SyHost project card")], "49%"),
@@ -32,7 +32,8 @@ LAYOUT = [
     ("live", "live-status.svg", None, LINKS["site"], "Live status of Re:Kaixen", "100%"),
     ("img", "h06.svg", lambda: section_header("06", "CONTACT", "連絡", 66), None, "06 Contact", "100%"),
     ("row", [("btn-discord.svg", lambda: button("ADD ME ON DISCORD", "フレンド", RED, 3), LINKS["discord"], "Add kait on Discord"),
-             ("btn-x.svg", lambda: button("FOLLOW ON X", "フォロー", RED, 4), LINKS["x"], "Follow @soytarikait on X")], "72"),
+             ("btn-x.svg", lambda: button("FOLLOW ON X", "フォロー", RED, 4), LINKS["x"], "Follow @soytarikait on X"),
+             ("btn-join.svg", lambda: button("JOIN OUR SERVER", "サーバー", RED, 5), LINKS["server"], "Join the Re:Kaixen Discord server")], "70"),
     ("img", "footer.svg", footer, None, "See you next time!", "100%"),
 ]
 

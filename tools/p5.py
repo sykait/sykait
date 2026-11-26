@@ -199,12 +199,13 @@ def ransom(text, size, seed, styles=None, fonts=None, jitter=1.0, overlap=0.9, s
     return items, width
 
 
-def place(items, ox, oy, delay=0.0, step=0.07, pop="pop", bob="bob"):
+def place(items, ox, oy, delay=0.0, step=0.07, pop="pop", bob="bob", bob_step=None, bob_delay=0.0):
     out = []
     for i, it in enumerate(items):
         inner = it["svg"]
         if bob:
-            inner = f'<g class="{bob}" style="animation-delay:{-(i * 0.43) % 3:.2f}s">{inner}</g>'
+            bd = bob_delay + i * bob_step if bob_step is not None else -(i * 0.43) % 3
+            inner = f'<g class="{bob}" style="animation-delay:{bd:.2f}s">{inner}</g>'
         if pop:
             inner = f'<g class="{pop}" style="animation-delay:{delay + i * step:.2f}s">{inner}</g>'
         out.append(f'<g transform="translate({fmt(ox + it["x"])} {fmt(oy + it["y"])}) rotate({fmt(it["rot"])})">{inner}</g>')
@@ -329,6 +330,7 @@ BASE_CSS = """
 @keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
 .shine{animation:shine 5s cubic-bezier(.5,0,.2,1) infinite}
 @keyframes shine{0%{transform:translateX(-300px)}22%,100%{transform:translateX(1300px)}}
+.hopL{transform-box:fill-box;transform-origin:50% 100%;animation:hopL 3.6s ease-in-out infinite both}@keyframes hopL{0%,16%,100%{transform:none}6%{transform:translateY(-10px) rotate(-6deg)}11%{transform:translateY(1px) scaleY(.94)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-iteration-count:1!important}}
 """
 

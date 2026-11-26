@@ -146,24 +146,64 @@ def rekaixen():
              ("ANTI-NUKE", "防衛"), ("AI ASSISTANT", "相棒"), ("& MUCH MORE", "もっと")]
     mx, my, dy, dx = 640, 312, 40, -14
     n = len(feats)
-    # selector keyframes
-    kf = []
-    seg = 100 / n
-    for i in range(n):
-        a = i * seg
-        kf.append(f"{a + 2.5:.2f}%,{a + seg:.2f}%{{transform:translate({i * dx}px,{i * dy}px)}}")
-    css = "@keyframes sel{0%{transform:translate(0,0)}" + "".join(kf) + "}.sel{animation:sel 10.5s cubic-bezier(.6,0,.2,1) infinite 1.8s}"
+    # Game-menu cursor: hop down one item at a time (overshoot + squash on landing, a flash and
+    # a star pop), and from the last item keep going down off the list, then drop back in from
+    # above onto the first item.
+    S, m = 1.55, .32            # time per item, move time
+    a = n * S - m               # leave the last item
+    b2 = a + .22                # gone below the list
+    c = b2 + .02                # teleported above the list
+    T = c + .32                 # landed on the first item again (= start of the loop)
+    P = lambda t: f"{t / T * 100:.2f}%"
+    pos = lambda i, extra=0: f"translate({i * dx}px,{i * dy + extra}px)"
+    kf = [f"0%{{transform:{pos(0)} scale(1,1);opacity:1}}"]
+    arrivals = [0.0]
+    for i in range(1, n):
+        t0, t2 = i * S - m, i * S
+        kf.append(f"{P(t0)}{{transform:{pos(i - 1)} scale(1,1);opacity:1}}")
+        kf.append(f"{P(t2 - m * .35)}{{transform:{pos(i, 8)} scale(1.05,.84);opacity:1}}")
+        kf.append(f"{P(t2)}{{transform:{pos(i)} scale(1,1);opacity:1}}")
+        arrivals.append(t2)
+    kf.append(f"{P(a)}{{transform:{pos(n - 1)} scale(1,1);opacity:1}}")
+    kf.append(f"{P(b2)}{{transform:{pos(n)} scale(1,.55);opacity:0}}")
+    kf.append(f"{P(c)}{{transform:{pos(-1)} scale(1,.55);opacity:0}}")
+    kf.append(f"{P(T - .32 * .35)}{{transform:{pos(0, 8)} scale(1.05,.84);opacity:1}}")
+    kf.append(f"100%{{transform:{pos(0)} scale(1,1);opacity:1}}")
+    css = ("@keyframes sel{" + "".join(kf) + "}"
+           f".sel{{transform-box:fill-box;transform-origin:50% 50%;animation:sel {T:.2f}s ease-in-out 1.8s infinite both}}")
+    # landing flash + star pop, one keyframe set each, synced to the same loop
+    fl, sp = ["0%{opacity:.75}"], ["0%{transform:scale(1.5) rotate(40deg)}"]
+    for t in arrivals[1:]:
+        fl += [f"{P(t - .02)}{{opacity:0}}", f"{P(t)}{{opacity:.75}}", f"{P(t + .28)}{{opacity:0}}"]
+        sp += [f"{P(t - .02)}{{transform:scale(1) rotate(0)}}", f"{P(t + .06)}{{transform:scale(1.5) rotate(40deg)}}", f"{P(t + .35)}{{transform:scale(1) rotate(0)}}"]
+    fl += [f"{P(.28)}{{opacity:0}}", f"{P(T - .03)}{{opacity:0}}", "100%{opacity:.75}"]
+    sp += [f"{P(.35)}{{transform:scale(1) rotate(0)}}", f"{P(T - .03)}{{transform:scale(1) rotate(0)}}", "100%{transform:scale(1.5) rotate(40deg)}"]
+    fl.sort(key=lambda s: float(s.split("%")[0])); sp.sort(key=lambda s: float(s.split("%")[0]))
+    css += ("@keyframes flash{" + "".join(fl) + "}" + f".flash{{animation:flash {T:.2f}s linear 1.8s infinite both}}"
+            "@keyframes starP{" + "".join(sp) + "}" + f".starP{{transform-box:fill-box;transform-origin:50% 50%;animation:starP {T:.2f}s ease-out 1.8s infinite both}}")
+    poly = f"{mx - 34},{my - 26} {mx + 320},{my - 31} {mx + 306},{my + 13} {mx - 42},{my + 15}"
     b.append(f'<g class="fade" style="animation-delay:1.6s"><g class="sel">'
-             f'<polygon points="{mx - 34},{my - 26} {mx + 320},{my - 31} {mx + 306},{my + 13} {mx - 42},{my + 15}" fill="{BLACK}" stroke="#fff" stroke-width="2" transform="translate(6 5)"/>'
-             f'<polygon points="{mx - 34},{my - 26} {mx + 320},{my - 31} {mx + 306},{my + 13} {mx - 42},{my + 15}" fill="{RED}"/>'
-             f'<g transform="translate({mx - 52} {my - 7})"><polygon class="spinF" points="{star5(14)}" fill="{WHITE}" stroke="#000" stroke-width="2.5"/></g>'
+             f'<polygon points="{poly}" fill="{BLACK}" stroke="#fff" stroke-width="2" transform="translate(6 5)"/>'
+             f'<polygon points="{poly}" fill="{RED}"/>'
+             f'<polygon class="flash" points="{poly}" fill="#fff"/>'
+             f'<g transform="translate({mx - 52} {my - 7})"><g class="starP"><polygon points="{star5(14)}" fill="{WHITE}" stroke="#000" stroke-width="2.5"/></g></g>'
              f"</g></g>")
+    # each item slides right and grows a little while the cursor sits on it
     for i, (en, jp) in enumerate(feats):
         x, y = mx + i * dx, my + i * dy
+        s_ = 0.0 if i == 0 else i * S
+        e_ = a if i == n - 1 else (i + 1) * S - m
+        on, off = "transform:translateX(16px) scale(1.08)", "transform:none"
+        if i == 0:
+            hk = f"0%{{{on}}}{P(e_)}{{{on}}}{P(e_ + .16)}{{{off}}}{P(T - .14)}{{{off}}}100%{{{on}}}"
+        else:
+            hk = f"0%{{{off}}}{P(s_ - .14)}{{{off}}}{P(s_)}{{{on}}}{P(e_)}{{{on}}}{P(e_ + .16)}{{{off}}}100%{{{off}}}"
+        css += (f"@keyframes hl{i}{{{hk}}}"
+                f".hl{i}{{transform-box:fill-box;transform-origin:0% 50%;animation:hl{i} {T:.2f}s cubic-bezier(.3,1.6,.5,1) 1.8s infinite both}}")
         its, ww = ransom(en, 27, seed=100 + i, styles=["ow", "ow", "ow", "wb", "ow", "ow", "bw", "ow", "ow", "ow", "wr", "ow"], jitter=.55, overlap=.86)
         kd, _ = text_d("jp", jp, 16, x + ww + 12, y + 6)
-        b.append(f'<g class="slideR" style="animation-delay:{1.0 + i * .08:.2f}s">{place(its, x - 8, y - 6, pop=None, bob=None)}'
-                 f'<path d="{kd}" fill="{WHITE}" opacity=".85"/></g>')
+        b.append(f'<g class="slideR" style="animation-delay:{1.0 + i * .08:.2f}s"><g class="hl{i}">{place(its, x - 8, y - 6, pop=None, bob=None)}'
+                 f'<path d="{kd}" fill="{WHITE}" opacity=".85"/></g></g>')
 
     b.append(rose_emblem(866, 160, 220, 136, 110, .6, seed=8))
     b.append(sparkles([(735, 50, 12, .3), (975, 230, 10, 1.2), (742, 258, 13, 2), (520, 470, 9, .9), (590, 120, 8, 1.6)]))

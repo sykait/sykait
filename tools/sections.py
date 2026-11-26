@@ -19,13 +19,15 @@ def section_header(num, title, kanji, seed):
     poly = f"18,22 {fmt(bar_end + 18)},16 {fmt(bar_end)},86 8,92"
     b.append(f'<g class="slideL"><polygon points="{poly}" fill="{RED}" transform="translate(9 7)"/>'
              f'<polygon points="{poly}" fill="{BLACK}" {LIGHT_SAFE}/></g>')
-    b.append(place(nums, 40, 54, delay=.15, step=.08))
-    b.append(place(tits, 54 + nw + 22, 54, delay=.3, step=.045))
+    b.append(f'<defs><clipPath id="hc{seed}"><polygon points="{poly}"/></clipPath></defs>'
+             f'<g clip-path="url(#hc{seed})"><g class="shine" style="animation-delay:{1.2 + (seed % 7) * .3:.1f}s"><polygon points="0,0 46,0 6,110 -40,110" fill="#fff" opacity=".18"/></g></g>')
+    b.append(place(nums, 40, 54, delay=.15, step=.08, bob="hopL", bob_step=.14, bob_delay=1.4))
+    b.append(place(tits, 54 + nw + 22, 54, delay=.3, step=.045, bob="hopL", bob_step=.07, bob_delay=1.7))
     kx = bar_end + 26
     b.append(f'<g transform="translate({fmt(kx)} 62) rotate(-4)"><g class="pop" style="animation-delay:.75s">'
-             f'<polygon points="-9,-28 {fmt(kw + 9)},-31 {fmt(kw + 12)},9 -6,11" fill="{BLACK}" transform="translate(4 4)"/>'
+             f'<g class="wig"><polygon points="-9,-28 {fmt(kw + 9)},-31 {fmt(kw + 12)},9 -6,11" fill="{BLACK}" transform="translate(4 4)"/>'
              f'<polygon points="-9,-28 {fmt(kw + 9)},-31 {fmt(kw + 12)},9 -6,11" fill="{RED}" stroke="#fff" stroke-width="2.5"/>'
-             f'<path d="{kd}" fill="{WHITE}"/></g></g>')
+             f'<path d="{kd}" fill="{WHITE}"/></g></g></g>')
     lx = kx + kw + 30
     if lx < W - 60:
         b.append(f'<g class="grow" style="animation-delay:.6s"><polygon points="{fmt(lx)},60 {W - 30},50 {W - 34},58 {fmt(lx)},66" fill="{RED}" {LIGHT_SAFE.replace("3", "1.5")}/></g>')
@@ -256,13 +258,17 @@ def arsenal():
             rot = rng.uniform(-5, 5)
             pts = f"{fmt(-bw / 2)},-21 {fmt(bw / 2)},-24 {fmt(bw / 2 - 3)},19 {fmt(-bw / 2 - 3)},21"
             b.append(f'<g transform="translate({fmt(x + bw / 2)} {y}) rotate({rot:.1f})"><g class="pop" style="animation-delay:{.1 + k * .06:.2f}s">'
-                     f'<g class="bob" style="animation-delay:-{(k * .37) % 3:.2f}s">'
+                     f'<g class="bob" style="animation-delay:-{(k * .37) % 3:.2f}s"><g class="spot" style="animation-delay:{2 + k * .4:.2f}s">'
                      f'<polygon points="{pts}" fill="{RED if box != RED else BLACK}" transform="translate(5 5)"/>'
                      f'<polygon points="{pts}" fill="{box}" stroke="{edge}" stroke-width="2.5" stroke-linejoin="round"/>'
-                     f'<path d="{d}" transform="translate({fmt(-w / 2)} 9)" fill="{ink}"/></g></g></g>')
+                     f'<path d="{d}" transform="translate({fmt(-w / 2)} 9)" fill="{ink}"/></g></g></g></g>')
             x += bw + 14
             k += 1
-    return svg_doc(W, H, "".join(b), title="Arsenal: tools and languages")
+    cyc = len(ARSENAL) * .4
+    css = (f".spot{{transform-box:fill-box;transform-origin:50% 50%;animation:spot {cyc:.1f}s cubic-bezier(.3,1.6,.5,1) infinite both}}"
+           f"@keyframes spot{{0%,{100 * .9 / cyc:.1f}%,100%{{transform:none}}{100 * .3 / cyc:.1f}%{{transform:translateY(-12px) scale(1.16) rotate(-5deg)}}}}")
+    b.append(sparkles([(40, 30, 10, .3), (W - 40, H - 30, 9, 1.4), (W - 60, 28, 8, 2.2), (60, H - 24, 8, 1)]))
+    return svg_doc(W, H, "".join(b), css=css, title="Arsenal: tools and languages")
 
 
 # ================================================================ FOOTER
@@ -325,10 +331,10 @@ def footer():
     bar = f"0,150 {W},136 {W},210 0,222"
     b.append(f'<polygon points="{bar}" fill="{RED}" transform="translate(0 10)"/><polygon points="{bar}" fill="{BLACK}" {LIGHT_SAFE}/>')
     items, tw = ransom("SEE YOU NEXT TIME!", 40, seed=909, styles=["ow", "wb", "ow", "ow", "bw", "wr", "ow", "ow", "wb", "ow", "rw", "ow"], jitter=.8, overlap=.88)
-    b.append(place(items, (W - tw) / 2 - 60, 184, delay=.4, step=.04))
+    b.append(place(items, (W - tw) / 2 - 60, 184, delay=.4, step=.04, bob="hopL", bob_step=.06, bob_delay=1.6))
     kd, kw = text_d("jpd", "またね", 24, 0, 0)
     b.append(f'<g transform="translate({fmt((W + tw) / 2 - 30)} 196) rotate(-5)"><g class="pop" style="animation-delay:1.1s">'
-             f'<polygon points="-9,-29 {fmt(kw + 9)},-32 {fmt(kw + 12)},9 -6,11" fill="{RED}" stroke="#fff" stroke-width="2.5"/><path d="{kd}" fill="{WHITE}"/>'
+             f'<g class="wig"><polygon points="-9,-29 {fmt(kw + 9)},-32 {fmt(kw + 12)},9 -6,11" fill="{RED}" stroke="#fff" stroke-width="2.5"/><path d="{kd}" fill="{WHITE}"/></g>'
              f'<g transform="translate({fmt(kw + 16)} -30)"><path class="beat" d="{heart(16)}" fill="{RED}" stroke="#fff" stroke-width="2"/></g></g></g>')
     # bottom line + watermark
     d, w = text_d("archivo", "MADE WITH", 14, 0, 0, tracking=2)

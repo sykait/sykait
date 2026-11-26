@@ -87,29 +87,39 @@ def strip_text(segments, size, x, y, font="barlow", gap=26):
 # ================================================================== BUTTONS
 
 def button(label, kanji, accent, seed):
-    W, H = 400, 104
+    """Call-to-action button. Each seed drifts on its own tempo and path (up/down and left/right)."""
+    W, H = 400, 120
     poly = "22,22 384,14 368,86 10,92"
     size = 38
     d, tw = text_d("anton", label, size, 0, 0, tracking=1)
-    if tw > 260:  # keep room for the star and the arrow
-        size = 38 * 260 / tw
+    if tw > 236:  # keep room for the star and the arrow
+        size = 38 * 236 / tw
         d, tw = text_d("anton", label, size, 0, 0, tracking=1)
     kd, kw = text_d("jp", kanji, 15, 0, 0)
-    tx = 58 + (290 - tw) / 2 - 6
-    b = [f'<defs><clipPath id="bc{seed}"><polygon points="{poly}"/></clipPath></defs>']
-    b.append(f'<g class="pop" style="animation-delay:.2s"><g class="bobB">'
+    tx = 86 + (250 - tw) / 2
+    b = [f'<defs><clipPath id="bc{seed}"><polygon points="{poly}"/></clipPath></defs><g transform="translate(0 12)">']
+    b.append(f'<g class="pop" style="animation-delay:{.1 + seed * .12:.2f}s"><g class="drift{seed}">'
              f'<polygon points="{poly}" fill="{accent}" transform="translate(8 7)"/>'
              f'<polygon points="{poly}" fill="{BLACK}" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>'
              f'<g clip-path="url(#bc{seed})"><g class="shine" style="animation-delay:{1 + seed * .7:.1f}s">'
              f'<polygon points="0,0 50,0 10,110 -40,110" fill="#fff" opacity=".22"/></g></g>'
-             f'<path d="{d}" transform="translate({fmt(tx)} 70)" fill="{WHITE}"/>'
-             f'<g transform="translate(36 54)"><polygon class="spinF" points="{star5(17)}" fill="{accent}" stroke="#fff" stroke-width="2"/></g>'
-             f'<g transform="translate({fmt(tx + tw + 14)} 56)"><path class="nudge" d="M0,-11 L14,0 L0,11 Z" fill="{accent}"/></g>'
-             f'<g transform="translate(250 6) rotate(-4)"><polygon points="-8,-4 {fmt(kw + 10)},-6 {fmt(kw + 7)},20 -6,21" fill="{WHITE}" stroke="#000" stroke-width="2"/>'
-             f'<path d="{kd}" transform="translate(1 14)" fill="{accent if accent != WHITE else BLACK}"/></g>'
-             f'</g></g>')
-    css = (".bobB{animation:bobB 2.8s ease-in-out infinite}@keyframes bobB{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}"
-           ".nudge{animation:nudge 1s ease-in-out infinite}@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}")
+             f'<path d="{d}" transform="translate({fmt(tx)} 68)" fill="{WHITE}"/>'
+             f'<g transform="translate(58 53)"><g class="starB"><polygon points="{star5(17)}" fill="{accent}" stroke="#fff" stroke-width="2"/></g></g>'
+             f'<g transform="translate({fmt(tx + tw + 14)} 54)"><path class="nudge" d="M0,-11 L14,0 L0,11 Z" fill="{accent}"/></g>'
+             f'<g transform="translate(250 6) rotate(-4)"><g class="tagW"><polygon points="-8,-4 {fmt(kw + 10)},-6 {fmt(kw + 7)},20 -6,21" fill="{WHITE}" stroke="#000" stroke-width="2"/>'
+             f'<path d="{kd}" transform="translate(1 14)" fill="{accent if accent != WHITE else BLACK}"/></g></g>'
+             f'</g></g></g>')
+    # a different drift path and tempo per button
+    paths = {1: "0,0 4,-3 1,-5 -3,-2", 2: "0,0 -4,-2 -1,-5 3,-3", 3: "0,0 3,-4 -2,-5 -4,-1",
+             4: "0,0 -3,-4 3,-5 4,-1", 5: "0,0 4,-1 2,-5 -3,-4"}
+    pts = [p.split(",") for p in paths.get(seed, paths[1]).split()]
+    steps = len(pts)
+    kf = "".join(f"{k * 100 / steps:.0f}%{{transform:translate({x}px,{y}px)}}" for k, (x, y) in enumerate(pts)) + "100%{transform:translate(0,0)}"
+    dur = {1: 3.4, 2: 4.1, 3: 2.9, 4: 3.7, 5: 4.6}.get(seed, 3.5)
+    css = (f".drift{seed}{{animation:drift{seed} {dur}s ease-in-out infinite}}@keyframes drift{seed}{{{kf}}}"
+           ".nudge{animation:nudge 1s ease-in-out infinite}@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}"
+           f".starB{{transform-box:fill-box;transform-origin:50% 50%;animation:starB {dur * .9:.1f}s cubic-bezier(.4,1.6,.5,1) infinite}}"
+           "@keyframes starB{0%,70%,100%{transform:rotate(0) scale(1)}80%{transform:rotate(144deg) scale(1.35)}90%{transform:rotate(216deg) scale(.9)}}"
+           f".tagW{{transform-box:fill-box;transform-origin:50% 100%;animation:tagW {dur * 1.3:.1f}s ease-in-out infinite}}"
+           "@keyframes tagW{0%,100%{transform:rotate(0)}50%{transform:rotate(-6deg) translateY(-2px)}}")
     return svg_doc(W, H, "".join(b), css=css, title=label)
-
-
