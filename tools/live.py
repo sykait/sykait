@@ -175,6 +175,7 @@ def stats_panel(s):
         ld, lw = text_d("barlowx", label, 15, 18, 92, tracking=.6)
         b.append(f'<g transform="translate({x} {y}) rotate({rot})"><g class="pop" style="animation-delay:{.25 + i * .08:.2f}s"><g class="bob" style="animation-delay:-{i * .55:.2f}s">'
                  f'<clipPath id="st{i}"><polygon points="0,4 172,0 168,104 -4,108"/></clipPath>'
+                 f'<polygon points="0,4 172,0 168,104 -4,108" fill="#000" stroke="#fff" stroke-width="1.5" transform="translate(12 12)"/>'
                  f'<polygon points="0,4 172,0 168,104 -4,108" fill="{BLACK if box != BLACK else RED}" transform="translate(6 6)" stroke="#fff" stroke-width="2"/>'
                  f'<polygon points="0,4 172,0 168,104 -4,108" fill="{box}" stroke="{BLACK}" stroke-width="3"/>'
                  f'{num}<path d="{ld}" fill="{ink}" opacity=".85"/>'
@@ -317,6 +318,9 @@ def status_panel(hist, bot):
     b = ['<defs>' + glow_def() + halftone_defs("stdots", "stm", 1, 0, .3, 1, color=RED, op=.28) + '</defs>']
     b.append(f'<rect width="{W}" height="{H}" fill="{BLACK}"/><rect width="{W}" height="{H}" fill="url(#stdots)" mask="url(#stm)"/>')
     b.append(f'<g transform="translate(700 210)"><g class="spin"><path d="{starburst(28, 760)}" fill="{RED}" opacity=".06"/></g></g>')
+    gd, gw = text_d("anton", "RE:KAIXEN RE:KAIXEN", 170, 300, 300, tracking=4)
+    b.append(f'<g class="ghost"><path d="{gd}" fill="none" stroke="#fff" stroke-width="2" opacity=".07"/></g>')
+    b.append(f'<polygon points="290,14 {W - 12},10 {W - 16},{H - 14} 270,{H - 10}" fill="none" stroke="#fff" stroke-width="1.5" opacity=".18"/>')
     # left slab: title + emblem
     b.append(f'<g class="slideR"><polygon points="0,0 330,0 268,{H} 0,{H}" fill="{RED}"/>'
              f'<polygon points="0,0 330,0 268,{H} 0,{H}" fill="none" stroke="#fff" stroke-width="4" transform="translate(16 0)"/></g>')
@@ -372,6 +376,7 @@ def status_panel(hist, bot):
         cid = f"tc{i}"
         b.append(f'<g transform="translate({x} {y}) rotate({rot})"><g class="pop" style="animation-delay:{.35 + i * .1:.2f}s"><g class="bob" style="animation-delay:-{i * .7:.1f}s">'
                  f'<clipPath id="{cid}"><polygon points="0,4 140,0 136,116 -4,120"/></clipPath>'
+                 f'<polygon points="0,4 140,0 136,116 -4,120" fill="#000" stroke="#fff" stroke-width="1.5" transform="translate(12 12)"/>'
                  f'<polygon points="0,4 140,0 136,116 -4,120" fill="{BLACK if box != BLACK else RED}" stroke="#fff" stroke-width="2" transform="translate(6 6)"/>'
                  f'<polygon points="0,4 140,0 136,116 -4,120" fill="{box}" stroke="#000" stroke-width="3"/>'
                  f'{num}<path d="{labd}" fill="{ink}"/><path d="{jd}" fill="{ink}" opacity=".7"/>'
@@ -401,6 +406,7 @@ def status_panel(hist, bot):
            ".ping{transform-box:fill-box;transform-origin:50% 50%;animation:ping 1.4s ease-out infinite}@keyframes ping{0%{transform:scale(1);opacity:1}100%{transform:scale(2.6);opacity:0}}"
            ".blinkL{animation:blinkL 1s steps(1) infinite}@keyframes blinkL{50%{opacity:.15}}"
            ".ecg{stroke-dasharray:22 78;animation:ecg 2.6s linear infinite}@keyframes ecg{0%{stroke-dashoffset:22}100%{stroke-dashoffset:-78}}"
+           f".ghost{{animation:ghost 22s linear infinite}}@keyframes ghost{{0%{{transform:translateX(0)}}100%{{transform:translateX(-{gw / 2:.0f}px)}}}}"
            ".stamp{transform-box:fill-box;transform-origin:50% 50%;animation:stamp .5s cubic-bezier(.3,1.6,.5,1) both}"
            "@keyframes stamp{0%{transform:scale(2.4) rotate(-12deg);opacity:0}100%{transform:none;opacity:1}}")
     return svg_doc(W, H, "".join(b), css=css, title=f"Re:Kaixen is {label}")

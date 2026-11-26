@@ -21,7 +21,7 @@
 
 <img src="assets/h04.svg" width="100%" alt="04 Arsenal"/>
 
-<img src="assets/arsenal.svg" width="100%" alt="Tools: JavaScript, Node.js, discord.js, TypeScript, Express, SQLite, OpenAI API, Stripe, PowerShell, HTML, CSS, SVG animation, Blender, Git, Claude Code"/>
+<img src="assets/arsenal.svg" width="100%" alt="Arsenal. Code: JavaScript, Node.js, discord.js, SQLite, OpenAI API, HTML, CSS, PowerShell, Batch. Animation: Blender, 3D animation, keyframing"/>
 
 <img src="assets/h05.svg" width="100%" alt="05 Live feed"/>
 

@@ -25,7 +25,7 @@ LAYOUT = [
     ("row", [("card-rekaixen.svg", lambda: project_card("rekaixen"), LINKS["site"], "Re:Kaixen project card"),
              ("card-syhost.svg", lambda: project_card("syhost"), "https://github.com/sykait/SyHost", "SyHost project card")], "49%"),
     ("img", "h04.svg", lambda: section_header("04", "ARSENAL", "武器", 44), None, "04 Arsenal", "100%"),
-    ("img", "arsenal.svg", arsenal, None, "Tools: JavaScript, Node.js, discord.js, TypeScript, Express, SQLite, OpenAI API, Stripe, PowerShell, HTML, CSS, SVG animation, Blender, Git, Claude Code", "100%"),
+    ("img", "arsenal.svg", arsenal, None, "Arsenal. Code: JavaScript, Node.js, discord.js, SQLite, OpenAI API, HTML, CSS, PowerShell, Batch. Animation: Blender, 3D animation, keyframing", "100%"),
     ("img", "h05.svg", lambda: section_header("05", "LIVE FEED", "記録", 55), None, "05 Live feed", "100%"),
     ("live", "live-stats.svg", None, None, "GitHub stats: repos, stars, followers, contributions, streaks and top languages", "100%"),
     ("live", "live-skyline.svg", None, None, "Last year of contributions as a skyline", "100%"),
@@ -47,9 +47,9 @@ def entries():
             yield item[1], item[2]
 
 
-def img_tag(fn, link, alt, width, prefix="assets/"):
+def img_tag(fn, link, alt, width, prefix="assets/", bust=""):
     attr = f'height="{width}"' if width.isdigit() else f'width="{width}"'
-    tag = f'<img src="{prefix}{fn}" {attr} alt="{alt}"/>'
+    tag = f'<img src="{prefix}{fn}{bust}" {attr} alt="{alt}"/>'
     return f'<a href="{link}">{tag}</a>' if link else tag
 
 
@@ -66,14 +66,17 @@ def readme():
     return "\n".join(rows)
 
 
+BUST = f"?v={int(__import__('time').time())}"  # the local preview always loads the newest panels
+
+
 def preview_html():
     parts = []
     for item in LAYOUT:
         if item[0] == "row":
-            parts.append('<p>' + " ".join(img_tag(fn, link, alt, item[2], "profile/assets/") for fn, _, link, alt in item[1]) + '</p>')
+            parts.append('<p>' + " ".join(img_tag(fn, link, alt, item[2], "profile/assets/", BUST) for fn, _, link, alt in item[1]) + '</p>')
         else:
             _, fn, _, link, alt, width = item
-            parts.append('<p>' + img_tag(fn, link, alt, width, "profile/assets/") + '</p>')
+            parts.append('<p>' + img_tag(fn, link, alt, width, "profile/assets/", BUST) + '</p>')
     body = "\n".join(parts)
     return f"""<!doctype html><meta charset="utf-8"><title>sykait profile preview</title>
 <style>

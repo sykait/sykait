@@ -99,7 +99,8 @@ def button(label, kanji, accent, seed):
     tx = 86 + (250 - tw) / 2
     b = [f'<defs><clipPath id="bc{seed}"><polygon points="{poly}"/></clipPath></defs><g transform="translate(0 12)">']
     b.append(f'<g class="pop" style="animation-delay:{.1 + seed * .12:.2f}s"><g class="drift{seed}">'
-             f'<polygon points="{poly}" fill="{accent}" transform="translate(8 7)"/>'
+             f'<polygon points="{poly}" fill="#000" stroke="#fff" stroke-width="1.5" transform="translate(13 11)"/>'
+             f'<polygon points="{poly}" fill="{accent}" transform="translate(7 6)"/>'
              f'<polygon points="{poly}" fill="{BLACK}" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>'
              f'<g clip-path="url(#bc{seed})"><g class="shine" style="animation-delay:{1 + seed * .7:.1f}s">'
              f'<polygon points="0,0 50,0 10,110 -40,110" fill="#fff" opacity=".22"/></g></g>'
