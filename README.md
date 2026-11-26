@@ -19,6 +19,8 @@
 
 <a href="https://re.kaixen.online"><img src="assets/card-rekaixen.svg" width="49%" alt="Re:Kaixen project card"/></a> <a href="https://github.com/sykait/SyHost"><img src="assets/card-syhost.svg" width="49%" alt="SyHost project card"/></a>
 
+<a href="https://github.com/sykait?tab=repositories"><img src="assets/live-projects.svg" width="100%" alt="More projects, updated automatically from GitHub"/></a>
+
 <img src="assets/h04.svg" width="100%" alt="04 Arsenal"/>
 
 <img src="assets/arsenal.svg" width="100%" alt="Arsenal. Animation: Blender, Roblox animation, custom rigs, weapon animations, camera work, framing. Code with AI: JavaScript, Node.js, discord.js, SQLite, OpenAI API, HTML/CSS, PowerShell, Batch"/>

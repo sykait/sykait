@@ -24,6 +24,7 @@ LAYOUT = [
     ("img", "h03.svg", lambda: section_header("03", "PROJECTS", "作品", 33), None, "03 Projects", "100%"),
     ("row", [("card-rekaixen.svg", lambda: project_card("rekaixen"), LINKS["site"], "Re:Kaixen project card"),
              ("card-syhost.svg", lambda: project_card("syhost"), "https://github.com/sykait/SyHost", "SyHost project card")], "49%"),
+    ("live", "live-projects.svg", None, "https://github.com/sykait?tab=repositories", "More projects, updated automatically from GitHub", "100%"),
     ("img", "h04.svg", lambda: section_header("04", "ARSENAL", "武器", 44), None, "04 Arsenal", "100%"),
     ("img", "arsenal.svg", arsenal, None, "Arsenal. Animation: Blender, Roblox animation, custom rigs, weapon animations, camera work, framing. Code with AI: JavaScript, Node.js, discord.js, SQLite, OpenAI API, HTML/CSS, PowerShell, Batch", "100%"),
     ("img", "h05.svg", lambda: section_header("05", "LIVE FEED", "記録", 55), None, "05 Live feed", "100%"),

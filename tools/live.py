@@ -101,6 +101,7 @@ def stats():
     return {
         "repos": u.get("public_repos", 0), "followers": u.get("followers", 0), "stars": stars,
         "contrib": sum(c for _, c in days), "streak": cur, "best": best, "langs": langs, "days": days,
+        "projects": public_projects(repos),
     }
 
 
@@ -422,16 +423,128 @@ def status_panel(hist, bot):
     return svg_doc(W, H, "".join(b), css=css, title=f"Re:Kaixen is {label}")
 
 
+# ------------------------------------------------------------------ more projects (auto)
+
+# Featured projects have their own hand-made cards; the profile repo is not a project.
+# Only public, non-fork, non-archived repos ever reach this list.
+SKIP_REPOS = {"sykait", "syhost", "re.kaixen", "sykait-ai"}
+
+
+def public_projects(repos):
+    out = [r for r in repos if not r.get("private") and not r.get("fork") and not r.get("archived")
+           and r.get("name", "").lower() not in SKIP_REPOS]
+    out.sort(key=lambda r: r.get("pushed_at") or "", reverse=True)
+    return [{"name": r["name"], "desc": r.get("description") or "", "lang": r.get("language") or "",
+             "stars": r.get("stargazers_count", 0), "pushed": (r.get("pushed_at") or "")[:10]} for r in out[:6]]
+
+
+def safe(key, s):
+    """Drop characters no font here can draw (repo names/descriptions can contain anything)."""
+    keep = []
+    for ch in s:
+        try:
+            glyph(key, ch, 10)
+            keep.append(ch)
+        except Exception:
+            keep.append("?") if ch.strip() else keep.append(" ")
+    return "".join(keep)
+
+
+def fit(key, s, size, maxw):
+    s = safe(key, s)
+    if measure(key, s, size) <= maxw:
+        return s
+    while s and measure(key, s + "…", size) > maxw:
+        s = s[:-1]
+    return s.rstrip() + "…"
+
+
+def projects_panel(projects):
+    W = 1000
+    n = len(projects)
+    cw, ch, gx, gy = 296, 150, 30, 30
+    rows = max(1, -(-n // 3))
+    top = 96
+    H = top + rows * (ch + gy) + 26
+    b = ['<defs>' + tile_tex_defs() + halftone_defs("mpdots", "mpm", 0, 0, 1, 1, color=RED, op=.22) + '</defs>']
+    b.append(f'<g class="fade"><polygon points="14,10 {W - 6},4 {W - 14},{H - 8} 6,{H - 2}" fill="{RED}" transform="translate(10 8)"/>'
+             f'<polygon points="14,10 {W - 6},4 {W - 14},{H - 8} 6,{H - 2}" fill="{BLACK}" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>'
+             f'<rect width="{W}" height="{H}" fill="url(#mpdots)" mask="url(#mpm)"/></g>')
+    items, tw = ransom("MORE PROJECTS", 34, seed=909, styles=["wb", "ow", "bw", "ow", "wr", "ow", "ow", "wb", "ow", "rw", "ow", "bw", "ow"], jitter=.7, overlap=.88)
+    b.append(place(items, 38, 60, delay=.15, step=.04, bob="hopL", bob_step=.07, bob_delay=1.5))
+    kd, kw = text_d("jpd", "もっと作品", 18, 0, 0)
+    b.append(f'<g transform="translate({fmt(60 + tw)} 66) rotate(-4)"><g class="pop" style="animation-delay:.6s"><g class="wig">'
+             f'<polygon points="-8,-24 {fmt(kw + 8)},-26 {fmt(kw + 10)},8 -6,9" fill="url(#tileg)" stroke="#fff" stroke-width="2"/><path d="{kd}" fill="#fff"/></g></g></g>')
+    ad, aw = text_d("mono", "AUTO-UPDATED FROM GITHUB", 12, 0, 0)
+    b.append(f'<g class="fade" style="animation-delay:.8s"><circle cx="{W - aw - 58}" cy="58" r="5" fill="{RED}" class="blinkL"/>'
+             f'<path d="{ad}" transform="translate({W - aw - 44} 62)" fill="#fff" opacity=".7"/></g>')
+    css = (".riseT{animation:riseT .6s cubic-bezier(.2,1.3,.4,1) both}@keyframes riseT{0%{opacity:0;transform:translateY(26px)}100%{opacity:1;transform:none}}"
+           ".floatT{animation:floatT 3.4s ease-in-out infinite}@keyframes floatT{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}"
+           ".blinkL{animation:blinkL 1s steps(1) infinite}@keyframes blinkL{50%{opacity:.15}}"
+           ".dotB{animation:dotB 1.2s ease-in-out infinite}@keyframes dotB{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}")
+    if not projects:
+        # empty state: looks intentional, fills itself the moment a public repo appears
+        x, y, w, h = 40, top, W - 92, ch
+        shape = f"0,4 {w},0 {w - 4},{h} -4,{h + 4}"
+        md, mw = text_d("anton", "NEW PROJECTS LAND HERE", 40, 30, 66)
+        sd, _ = text_d("barlow", "Every new public repo shows up here by itself, a few hours after it goes live.", 17, 30, 102)
+        dots = "".join(f'<g class="dotB" style="animation-delay:{i * .15:.2f}s"><circle cx="{fmt(30 + mw + 30 + i * 22)}" cy="56" r="7" fill="{RED}"/></g>' for i in range(3))
+        jd, jw = text_d("jpd", "準備中", 16, 0, 0)
+        b.append(f'<g transform="translate({x} {y})"><g class="riseT" style="animation-delay:.4s"><g class="floatT">'
+                 f'<clipPath id="mpe"><polygon points="{shape}"/></clipPath>'
+                 f'<polygon points="{shape}" fill="#000" stroke="#fff" stroke-width="1.5" transform="translate(10 10)"/>'
+                 f'<polygon points="{shape}" fill="url(#tileg)" transform="translate(5 5)"/>'
+                 f'<polygon points="{shape}" fill="{WHITE}" stroke="#000" stroke-width="3"/>'
+                 f'<path d="{md}" fill="{BLACK}"/>{dots}<path d="{sd}" fill="{BLACK}" opacity=".75"/>'
+                 f'<g transform="translate({fmt(w - jw - 34)} 30) rotate(5)"><polygon points="-8,-22 {fmt(jw + 8)},-24 {fmt(jw + 10)},7 -6,8" fill="{BLACK}"/><path d="{jd}" fill="#fff"/></g>'
+                 f'<g clip-path="url(#mpe)"><g class="shine" style="animation-delay:2.4s"><polygon points="0,0 40,0 0,170 -40,170" fill="{RED}" opacity=".18"/></g></g>'
+                 f'</g></g></g>')
+    for i, p in enumerate(projects):
+        col, row = i % 3, i // 3
+        x, y = 40 + col * (cw + gx), top + row * (ch + gy)
+        style = ["white", "black", "red"][i % 3]
+        box = {"white": WHITE, "black": "#151515", "red": "url(#tileg)"}[style]
+        ink = BLACK if style == "white" else WHITE
+        shape = f"0,3 {cw},0 {cw - 3},{ch} -3,{ch + 3}"
+        rot = [-1.2, .8, -.6, 1, -1, .6][i]
+        nd, _ = text_d("archivo", fit("archivo", p["name"], 22, cw - 40), 22, 18, 40)
+        lines = wrap("barlow", safe("barlow", p["desc"]) or "No description yet.", 14.5, cw - 36)[:2]
+        if len(wrap("barlow", safe("barlow", p["desc"]), 14.5, cw - 36)) > 2:
+            lines[1] = fit("barlow", lines[1] + " …", 14.5, cw - 36)
+        desc = "".join(f'<path d="{text_d("barlow", ln, 14.5, 18, 68 + k * 19)[0]}" fill="{ink}" opacity=".8"/>' for k, ln in enumerate(lines))
+        meta = []
+        mx_ = 18
+        if p["lang"]:
+            ld, lw = text_d("barlowx", fit("barlowx", p["lang"].upper(), 14, 110), 14, mx_ + 16, 0)
+            meta.append(f'<rect x="{mx_}" y="-10" width="10" height="10" fill="{RED if style != "red" else WHITE}" stroke="{ink}" stroke-width="1.5" transform="rotate(8 {mx_ + 5} -5)"/><path d="{ld}" fill="{ink}"/>')
+            mx_ += 16 + lw + 16
+        sd, sw = text_d("barlowx", f"★ {p['stars']}", 14, mx_, 0)
+        meta.append(f'<path d="{sd}" fill="{ink}"/>')
+        ud, uw = text_d("mono", p["pushed"], 11, cw - 18, 0, anchor="end")
+        meta.append(f'<path d="{ud}" fill="{ink}" opacity=".6"/>')
+        b.append(f'<g transform="translate({x} {y}) rotate({rot})"><g class="riseT" style="animation-delay:{.35 + i * .1:.2f}s"><g class="floatT" style="animation-delay:-{i * .6:.1f}s">'
+                 f'<clipPath id="mp{i}"><polygon points="{shape}"/></clipPath>'
+                 f'<polygon points="{shape}" fill="#000" stroke="#fff" stroke-width="1.5" transform="translate(10 10)"/>'
+                 f'<polygon points="{shape}" fill="{RED if style != "red" else BLACK}" transform="translate(5 5)"/>'
+                 f'<polygon points="{shape}" fill="{box}" stroke="{"#000" if style == "white" else "#fff"}" stroke-width="2.5"/>'
+                 + (f'<g clip-path="url(#mp{i})">{tile_dots(cw + 40, ch + 40)}</g>' if style == "red" else "")
+                 + f'<path d="{nd}" fill="{ink}"/>{desc}<g transform="translate(0 {ch - 18})">{"".join(meta)}</g>'
+                 f'<g clip-path="url(#mp{i})"><g class="shine" style="animation-delay:{2.2 + i * .4:.1f}s"><polygon points="0,0 34,0 0,170 -34,170" fill="#fff" opacity=".3"/></g></g>'
+                 f'</g></g></g>')
+    b.append(sparkles([(W - 40, 30, 10, .4), (36, H - 26, 8, 1.6), (W - 50, H - 30, 8, 2.4)]))
+    return svg_doc(W, H, "".join(b), css=css, title=f"More projects: {', '.join(p['name'] for p in projects) or 'coming soon'}")
+
+
 def main():
     os.makedirs(ASSETS, exist_ok=True)
     s = stats()
     hist = check_status()
     bot = bot_stats()
-    for fn, svg in [("live-stats.svg", stats_panel(s)), ("live-skyline.svg", skyline_panel(s["days"])), ("live-status.svg", status_panel(hist, bot))]:
+    for fn, svg in [("live-stats.svg", stats_panel(s)), ("live-skyline.svg", skyline_panel(s["days"])), ("live-status.svg", status_panel(hist, bot)), ("live-projects.svg", projects_panel(s["projects"]))]:
         with open(os.path.join(ASSETS, fn), "w", encoding="utf-8") as f:
             f.write(svg)
         print(f"{fn:18} {len(svg.encode()) / 1024:7.1f} KB")
-    print(f"contrib={s['contrib']} streak={s['streak']}/{s['best']} repos={s['repos']} stars={s['stars']} langs={list(s['langs'])} status={hist[-1]} bot={bot}")
+    print(f"contrib={s['contrib']} streak={s['streak']}/{s['best']} repos={s['repos']} stars={s['stars']} langs={list(s['langs'])} status={hist[-1]} bot={bot} projects={[p['name'] for p in s['projects']]}")
 
 
 if __name__ == "__main__":
